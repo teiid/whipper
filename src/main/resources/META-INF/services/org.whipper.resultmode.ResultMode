@@ -1,0 +1,3 @@
+org.whipper.resultmode.CompareResultMode
+org.whipper.resultmode.GenerateResultMode
+org.whipper.resultmode.NoneResultMode
