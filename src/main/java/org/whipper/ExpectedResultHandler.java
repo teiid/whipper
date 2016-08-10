@@ -369,9 +369,6 @@ public class ExpectedResultHandler {
             if(o1 != null && o2 == null){
                 return 1;
             }
-//            System.out.println(o1.getClass());
-//            System.out.println(o2.getClass());
-//            System.out.println(o1.getClass() == o2.getClass());
             if((o1.getClass() == o2.getClass()) && (o1 instanceof Comparable)){
                 return ((Comparable)o1).compareTo(o2);
             }

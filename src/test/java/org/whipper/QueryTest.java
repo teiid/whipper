@@ -154,7 +154,7 @@ public class QueryTest {
     @Test
     public void runQueryTestExceptionDbNotAvailable() throws SQLException{
         SQLException ex = new SQLException("ex", "00");
-        DbNotAvailableException exDb = new DbNotAvailableException();
+        DbNotAvailableException exDb = new DbNotAvailableException("Thrown in test.");
         Query q = getQuery(getException(ex), getResultHandler(true, false, true, exDb, null), false);
         Assert.assertFalse("Query has not been executed yet.", q.isExecuted());
         q.run();
@@ -181,7 +181,7 @@ public class QueryTest {
     @Test
     public void runQueryTestExceptionServerNotAvailable() throws SQLException{
         SQLException ex = new SQLException("ex", "08");
-        ServerNotAvailableException exSrv = new ServerNotAvailableException();
+        ServerNotAvailableException exSrv = new ServerNotAvailableException("Thrown in test.");
         Query q = getQuery(getException(ex), getResultHandler(true, false, true, exSrv, null), false);
         Assert.assertFalse("Query has not been executed yet.", q.isExecuted());
         q.run();

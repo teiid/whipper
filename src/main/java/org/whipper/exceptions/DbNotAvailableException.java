@@ -11,13 +11,6 @@ public class DbNotAvailableException extends WhipperException {
 
     /**
      * Creates a new exception.
-     */
-    public DbNotAvailableException() {
-        super();
-    }
-
-    /**
-     * Creates a new exception.
      *
      * @param message message
      * @param cause cause
@@ -33,14 +26,5 @@ public class DbNotAvailableException extends WhipperException {
      */
     public DbNotAvailableException(String message) {
         super(message);
-    }
-
-    /**
-     * Creates a new exception.
-     *
-     * @param cause cause
-     */
-    public DbNotAvailableException(Throwable cause) {
-        super(cause);
     }
 }

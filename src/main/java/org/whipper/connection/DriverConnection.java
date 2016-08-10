@@ -11,7 +11,7 @@ import org.whipper.Whipper;
 import org.whipper.Whipper.Keys;
 
 /**
- * This factory will load drive and use {@link DriverManager} to obtain connection to database.
+ * This factory will load driver and use {@link DriverManager} to obtain connection to database.
  *
  * @author Juraj Duráni
  */
@@ -79,5 +79,4 @@ public class DriverConnection implements ConnectionFactory {
     public String getName() {
         return "DRIVER";
     }
-
 }

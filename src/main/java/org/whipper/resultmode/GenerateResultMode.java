@@ -21,7 +21,7 @@ public class GenerateResultMode implements ResultMode {
     public void destroy() {}
 
     @Override
-    public void init(Properties props) {
+    public void resetConfiguration(Properties props) {
         String outDirStr = props.getProperty(Keys.OUTPUT_DIR);
         if(outDirStr == null){
             throw new IllegalArgumentException("Output directory is not set (property " + Keys.OUTPUT_DIR + ")");
@@ -36,7 +36,7 @@ public class GenerateResultMode implements ResultMode {
 
     @Override
     public ResultHandler handleResult(Query q) {
-        File outputDir = new File(rootOutputDir, "GENERATE"
+        File outputDir = new File(rootOutputDir, getName()
                 + File.separator + q.getScenario().getQuerysetDirName()
                 + File.separator + q.getScenario().getExpectedResultsDirName()
                 + File.separator + q.getSuite().getId());

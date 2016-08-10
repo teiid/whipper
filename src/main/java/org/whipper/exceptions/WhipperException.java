@@ -10,13 +10,6 @@ public class WhipperException extends Exception {
     private static final long serialVersionUID = 1L;
 
     /**
-     * Create a new exception.
-     */
-    public WhipperException() {
-        super();
-    }
-
-    /**
      * Creates a new exception.
      *
      * @param message message
@@ -33,14 +26,5 @@ public class WhipperException extends Exception {
      */
     public WhipperException(String message) {
         super(message);
-    }
-
-    /**
-     * Creates a new exception.
-     *
-     * @param cause cause
-     */
-    public WhipperException(Throwable cause) {
-        super(cause);
     }
 }

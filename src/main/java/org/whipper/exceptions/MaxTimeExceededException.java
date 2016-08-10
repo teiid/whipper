@@ -11,13 +11,6 @@ public class MaxTimeExceededException extends WhipperException {
 
     /**
      * Creates a new exception.
-     */
-    public MaxTimeExceededException() {
-        super();
-    }
-
-    /**
-     * Creates a new exception.
      *
      * @param message message
      * @param cause cause
@@ -33,14 +26,5 @@ public class MaxTimeExceededException extends WhipperException {
      */
     public MaxTimeExceededException(String message) {
         super(message);
-    }
-
-    /**
-     * Creates a new exception.
-     *
-     * @param cause cause
-     */
-    public MaxTimeExceededException(Throwable cause) {
-        super(cause);
     }
 }

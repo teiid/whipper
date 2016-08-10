@@ -28,7 +28,7 @@ public class CompareResultMode implements ResultMode {
     private final ExpectedResultHandler handler = new ExpectedResultHandler();
 
     @Override
-    public void init(Properties props) {
+    public void resetConfiguration(Properties props) {
         String outDirStr = props.getProperty(Keys.OUTPUT_DIR);
         if(outDirStr == null){
             throw new IllegalArgumentException("Output directory is not set (property " + Keys.OUTPUT_DIR + ")");
@@ -79,7 +79,7 @@ public class CompareResultMode implements ResultMode {
      * @throws IOException if some error occurs
      */
     private void writeErrorFile(Query q) throws IOException{
-        String fileName = q.getScenario().getId() + File.separator + "errors_for_COMPARE" + File.separator + q.getSuite().getId() + "_" + q.getId();
+        String fileName = q.getScenario().getId() + File.separator + "errors_for_" + getName() + File.separator + q.getSuite().getId() + "_" + q.getId();
         File errorFileXml = new File(outputDirectory, fileName + ".err");
         File errorFileTxt = new File(outputDirectory, fileName + "_messages.txt");
         errorFileXml.getParentFile().mkdirs();

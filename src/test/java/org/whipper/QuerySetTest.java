@@ -115,14 +115,14 @@ public class QuerySetTest {
     @Test(expected = ServerNotAvailableException.class)
     public void serverNotAvailableTest() throws Exception{
         QuerySet qs = new QuerySet("", true);
-        qs.addQuery(getQuery(false, new ServerNotAvailableException()));
+        qs.addQuery(getQuery(false, new ServerNotAvailableException("Thrown in test.")));
         qs.runQueries();
     }
 
     @Test(expected = DbNotAvailableException.class)
     public void dbNotAvailableTest() throws Exception{
         QuerySet qs = new QuerySet("", true);
-        qs.addQuery(getQuery(false, new DbNotAvailableException()));
+        qs.addQuery(getQuery(false, new DbNotAvailableException("Thrown in test.")));
         qs.runQueries();
     }
 

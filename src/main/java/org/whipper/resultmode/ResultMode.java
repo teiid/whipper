@@ -12,11 +12,11 @@ import org.whipper.Query;
 public interface ResultMode {
 
     /**
-     * Initializes class. May be called multiple times.
+     * Sets/resets configuration of this result mode. May be called multiple times.
      *
-     * @param props test properties.
+     * @param props test properties
      */
-    void init(Properties props);
+    void resetConfiguration(Properties props);
 
     /**
      * Handles query result.
@@ -27,7 +27,7 @@ public interface ResultMode {
     ResultHandler handleResult(Query q);
 
     /**
-     * Destroys class. May be called multiple times.
+     * Destroys result mode.
      */
     void destroy();
 

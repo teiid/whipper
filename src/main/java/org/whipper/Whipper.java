@@ -37,6 +37,7 @@ public class Whipper {
 
     /**
      * Keys of properties.
+     *
      * @author Juraj Duráni
      */
     public static interface Keys{
@@ -92,11 +93,7 @@ public class Whipper {
         try{
             new Whipper().runTest(f, p);
         } catch (Throwable t){
-            if(LOG.isDebugEnabled()){
-                LOG.warn("Exception thrown: " + t.getMessage(), t);
-            } else {
-                LOG.warn("Exception thrown: " + t.getMessage());
-            }
+            LOG.warn("Exception thrown: " + t.getMessage(), t);
         }
     }
 
@@ -167,38 +164,41 @@ public class Whipper {
      */
     public void runTest(Properties props){
         resultMode = getResultMode(props);
-        List<TestResultsWriter> trws = getResultWriters(props);
+        List<TestResultsWriter> trws = getResultWriters(resolvePlaceHolders(props));
         ScenarioIterator iter = new ScenarioIterator(props);
-        while(iter.hasNext()){
-            Scenario scen = iter.next();
-            if(scen == null){
-                continue;
-            }
-            Properties init = iter.getScenarioInitProperties();
-            resultMode.init(init);
-            if(scen.before()){
-                try{
-                    scen.run();
-                } catch (WhipperException ex){
-                    LOG.error("Scenario has been interrupted.", ex);
-                } catch (Exception ex){
-                    LOG.error("Uknown exception thrown.", ex);
-                    throw ex;
-                } finally {
-                    scen.after();
-                    for(TestResultsWriter trw : trws){
-                        trw.writeResultOfScenario(scen);
-                    }
+        try{
+            while(iter.hasNext()){
+                Scenario scen = iter.next();
+                if(scen == null){
+                    continue;
                 }
-            } else {
-                LOG.warn("Skipping scenario {}.", scen.getId());
+                Properties init = iter.getScenarioInitProperties();
+                resultMode.resetConfiguration(init);
+                if(scen.before()){
+                    try{
+                        scen.run();
+                    } catch (WhipperException ex){
+                        LOG.error("Scenario has been interrupted.", ex);
+                    } catch (Exception ex){
+                        LOG.error("Uknown exception thrown.", ex);
+                        throw ex;
+                    } finally {
+                        scen.after();
+                        for(TestResultsWriter trw : trws){
+                            trw.writeResultOfScenario(scen);
+                        }
+                    }
+                } else {
+                    LOG.warn("Skipping scenario {}.", scen.getId());
+                }
             }
+        } finally {
             resultMode.destroy();
         }
     }
 
     /**
-     * Loads all {@link TestResultsWriter} services on classpath.
+     * Loads all {@link TestResultsWriter} services from classpath.
      *
      * @param init properties to use to initialize writer
      * @return list of {@link TestResultsWriter}s
@@ -272,10 +272,10 @@ public class Whipper {
                             String nameNoExt = removeExtension(name);
                             boolean accept = pathname.isFile() && name.endsWith(".properties");
                             if(accept && incl != null){
-                                accept = accept && incl.matcher(nameNoExt).matches();
+                                accept = incl.matcher(nameNoExt).matches();
                             }
                             if(accept && excl != null){
-                                accept = accept & !excl.matcher(nameNoExt).matches();
+                                accept = !excl.matcher(nameNoExt).matches();
                             }
                             return accept;
                         }

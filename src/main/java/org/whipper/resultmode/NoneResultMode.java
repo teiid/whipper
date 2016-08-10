@@ -20,7 +20,7 @@ public class NoneResultMode implements ResultMode {
     public void destroy() {}
 
     @Override
-    public void init(Properties props) {}
+    public void resetConfiguration(Properties props) {}
 
     @Override
     public String getName() {

@@ -17,6 +17,11 @@ import org.whipper.Scenario;
 import org.whipper.Suite;
 import org.whipper.Whipper.Keys;
 
+/**
+ * Default test results writer.
+ *
+ * @author Juraj Duráni
+ */
 public class DefaultTestResultsWriter implements TestResultsWriter{
 
     private static final Logger LOG = LoggerFactory.getLogger(DefaultTestResultsWriter.class);
@@ -54,6 +59,8 @@ public class DefaultTestResultsWriter implements TestResultsWriter{
     @Override
     public void destroy(){
         outputDir = null;
+        errors = null;
+        totals = null;
     }
 
     @Override
@@ -71,6 +78,13 @@ public class DefaultTestResultsWriter implements TestResultsWriter{
         }
     }
 
+    /**
+     * Writes result of the suite in files {@code <outDir>/<suite-name>.txt}
+     * and {@code <outDir>/<suite-name>_<timestamp>.txt}
+     *
+     * @param outDir output directory
+     * @param suite suite
+     */
     private void writeResultOfSuite(File outDir, Suite suite){
         File out1 = new File(outDir, suite.getId() + ".txt");
         File out2 = new File(outDir, suite.getId() + TS_FORMAT.format(new java.util.Date(System.currentTimeMillis()))  + ".txt");
@@ -95,6 +109,13 @@ public class DefaultTestResultsWriter implements TestResultsWriter{
         }
     }
 
+    /**
+     * Writes results of the suite to provided file writer.
+     *
+     * @param fw file writer
+     * @param suite suite
+     * @throws IOException if some error occurs
+     */
     private void writeSuiteResults(FileWriter fw, Suite suite) throws IOException{
         if(suite.getNumberOfExecutedQueries() > 0){
             fw.append(LS);
@@ -104,6 +125,13 @@ public class DefaultTestResultsWriter implements TestResultsWriter{
         }
     }
 
+    /**
+     * Writes header of the suite summary file to provided file writer
+     *
+     * @param fw file writer
+     * @param suite suite
+     * @throws IOException is some exception occurs
+     */
     private void writeSuiteSummaryHeader(FileWriter fw, Suite suite) throws IOException{
         appendLine(fw, "Suite - " + suite.getId());
         appendLine(fw, "============================");
@@ -120,6 +148,12 @@ public class DefaultTestResultsWriter implements TestResultsWriter{
         appendLine(fw, "============================");
     }
 
+    /**
+     * Writes summary of the scenario to global summary files (totals and errors)
+     * and to file {@code Summary_<scenario>.txt}
+     *
+     * @param scen scenario
+     */
     private void writeSummary(Scenario scen){
         try{
             File out = new File(outputDir, "Summary_" + scen.getId() + ".txt");
@@ -164,6 +198,13 @@ public class DefaultTestResultsWriter implements TestResultsWriter{
         }
     }
 
+    /**
+     * Writes failed queries to provided file writer.
+     *
+     * @param fw file writer
+     * @param scen scenario
+     * @throws IOException is some error occurs
+     */
     private void writeScenarioResults(FileWriter fw, Scenario scen) throws IOException{
         List<Query> failedQueries = scen.getFailedQueries();
         LOG.debug("Failed queries [{}]: {}", failedQueries.size(), failedQueries);
@@ -188,6 +229,13 @@ public class DefaultTestResultsWriter implements TestResultsWriter{
         }
     }
 
+    /**
+     * Writers header of the summary file of the scenario to provided file writer.
+     *
+     * @param fw file writer
+     * @param scen scenario
+     * @throws IOException is some error occurs
+     */
     private void writeScenarioSummaryHeader(FileWriter fw, Scenario scen) throws IOException{
         appendLine(fw, "Scenario - " + scen.getId());
         appendLine(fw, "======================");
@@ -281,26 +329,3 @@ public class DefaultTestResultsWriter implements TestResultsWriter{
         return hoursStr + ":" + minStr + ":" + secStr + "." + milisStr;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

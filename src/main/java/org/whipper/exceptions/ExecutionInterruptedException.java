@@ -11,13 +11,6 @@ public class ExecutionInterruptedException extends WhipperException {
 
     /**
      * Creates a new exception.
-     */
-    public ExecutionInterruptedException() {
-        super();
-    }
-
-    /**
-     * Creates a new exception.
      *
      * @param message message
      * @param cause cause
@@ -33,14 +26,5 @@ public class ExecutionInterruptedException extends WhipperException {
      */
     public ExecutionInterruptedException(String message) {
         super(message);
-    }
-
-    /**
-     * Creates a new exception.
-     *
-     * @param cause cause
-     */
-    public ExecutionInterruptedException(Throwable cause) {
-        super(cause);
     }
 }

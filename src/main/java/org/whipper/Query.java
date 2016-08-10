@@ -102,11 +102,11 @@ public class Query implements TimeTracker{
         }
         if(exception != null){
             if(exception.getSQLState().startsWith("08")){
-                result.exception = new ServerNotAvailableException(exception);
+                result.exception = new ServerNotAvailableException(exception.getMessage(), exception);
                 result.pass = false;
                 return;
             } else if(!valid){
-                result.exception = new DbNotAvailableException(exception);
+                result.exception = new DbNotAvailableException(exception.getMessage(), exception);
                 result.pass = false;
                 return;
             } else {

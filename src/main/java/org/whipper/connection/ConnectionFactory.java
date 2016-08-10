@@ -18,7 +18,7 @@ public interface ConnectionFactory {
     void init(Properties props);
 
     /**
-     * Returns connection to the databse.
+     * Returns connection to the database.
      *
      * @return connection
      * @throws Exception if some error occurs
