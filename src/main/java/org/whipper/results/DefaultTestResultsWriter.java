@@ -135,8 +135,8 @@ public class DefaultTestResultsWriter implements TestResultsWriter{
     private void writeSuiteSummaryHeader(FileWriter fw, Suite suite) throws IOException{
         appendLine(fw, "Suite - " + suite.getId());
         appendLine(fw, "============================");
-        appendLine(fw, "Start Time:                 " + DATE_FORMAT.format(new java.util.Date(suite.getStartTime())));
-        appendLine(fw, "End Time:                   " + DATE_FORMAT.format(new java.util.Date(suite.getEndTime())));
+        appendLine(fw, "Start Time:                 " + formatDate(suite.getStartTime()));
+        appendLine(fw, "End Time:                   " + formatDate(suite.getEndTime()));
         appendLine(fw, "Elapsed:                    " + timeToString(suite.getDuration()));
         int all = suite.getNumberOfAllQueries();
         int exec = suite.getNumberOfExecutedQueries();
@@ -239,8 +239,8 @@ public class DefaultTestResultsWriter implements TestResultsWriter{
     private void writeScenarioSummaryHeader(FileWriter fw, Scenario scen) throws IOException{
         appendLine(fw, "Scenario - " + scen.getId());
         appendLine(fw, "======================");
-        appendLine(fw, "Start Time:           " + DATE_FORMAT.format(new java.util.Date(scen.getStartTime())));
-        appendLine(fw, "End Time:             " + DATE_FORMAT.format(new java.util.Date(scen.getEndTime())));
+        appendLine(fw, "Start Time:           " + formatDate(scen.getStartTime()));
+        appendLine(fw, "End Time:             " + formatDate(scen.getEndTime()));
         appendLine(fw, "Elapsed:              " + timeToString(scen.getDuration()));
         appendLine(fw, "----------------------");
         appendLine(fw, "Number of all suites: " + scen.getSuites().size());
@@ -278,6 +278,19 @@ public class DefaultTestResultsWriter implements TestResultsWriter{
     }
 
     /**
+     * Formats date. If date is less than or equal to 0, current date is returned.
+     *
+     * @param date date
+     * @return formatted date
+     */
+    private String formatDate(long date){
+        if(date <= 0){
+            date = System.currentTimeMillis();
+        }
+        return DATE_FORMAT.format(new java.util.Date(date));
+    }
+
+    /**
      * Pads string {@code str} to required length {@code len}.
      * New spaces (if any) will be appended to the end.
      *
@@ -299,6 +312,9 @@ public class DefaultTestResultsWriter implements TestResultsWriter{
      * @return string representation if {@code time}
      */
     String timeToString(long time){
+        if(time < 0){
+            return Long.toString(time);
+        }
         long tmp = time / 1000;
         long milis = time - tmp * 1000;
         time = tmp;

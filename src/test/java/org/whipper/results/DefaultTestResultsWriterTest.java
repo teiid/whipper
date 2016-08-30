@@ -35,4 +35,5 @@ public class DefaultTestResultsWriterTest{
     @Test public void timeToStringTest1m1s(){ Assert.assertEquals(dtrw.timeToString(61000), "00:01:01.000"); }
     @Test public void timeToStringTest1msToMidnight(){ Assert.assertEquals(dtrw.timeToString(23*3600000 + 59*60000 + 59*1000 + 999), "23:59:59.999"); }
     @Test public void timeToStringTest26hPlus(){ Assert.assertEquals(dtrw.timeToString(26*3600000 + 57*60000 + 4*1000 + 532), "26:57:04.532"); }
+    @Test public void timeToStringTestNegativeTime(){ Assert.assertEquals(dtrw.timeToString(-1), "-1"); }
 }
