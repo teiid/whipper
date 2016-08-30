@@ -184,12 +184,12 @@ public class Whipper {
                         throw ex;
                     } finally {
                         scen.after();
-                        for(TestResultsWriter trw : trws){
-                            trw.writeResultOfScenario(scen);
-                        }
                     }
                 } else {
                     LOG.warn("Skipping scenario {}.", scen.getId());
+                }
+                for(TestResultsWriter trw : trws){
+                    trw.writeResultOfScenario(scen);
                 }
             }
         } finally {
