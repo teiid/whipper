@@ -5,8 +5,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -20,7 +22,8 @@ import org.slf4j.LoggerFactory;
 class SettingsImpl implements Settings{
     private static final Logger LOG = LoggerFactory.getLogger(Settings.class);
 
-    private final List<SettingValueChangedListener> listeners = new LinkedList<>();
+    private final List<SettingValueChangedListener> allKeysListeners = new LinkedList<>();
+    private final Map<String, List<SettingValueChangedListener>> keyListeners = new HashMap<>();
     private final Properties settings = new Properties();
     private final File settingsFile;
 
@@ -57,21 +60,11 @@ class SettingsImpl implements Settings{
     }
 
     @Override
-    public String getSettingValue(Setting key){
-        return getSettingValue(key.getKey());
-    }
-
-    @Override
     public String getSettingValue(String key){
         if(key == null || key.isEmpty()){
             return null;
         }
         return settings.getProperty(key);
-    }
-
-    @Override
-    public void setSettingValue(Setting key, String value){
-        setSettingValue(key.getKey(), value);
     }
 
     @Override
@@ -89,16 +82,40 @@ class SettingsImpl implements Settings{
     }
 
     @Override
-    public void addSettingValueChangedListener(SettingValueChangedListener listener){
+    public void addSettingValueChangedListener(SettingValueChangedListener listener, String... keys){
         if(listener != null){
-            listeners.add(listener);
+            if(keys == null || keys.length == 0){
+                allKeysListeners.add(listener);
+            } else {
+                for(String key : keys){
+                    if(key != null && !key.isEmpty()){
+                        List<SettingValueChangedListener> listeners = keyListeners.get(key);
+                        if(listeners == null){
+                            listeners = new LinkedList<>();
+                            keyListeners.put(key, listeners);
+                        }
+                        listeners.add(listener);
+                    }
+                }
+            }
         }
     }
 
     @Override
-    public void removeSettingValueChangedListener(SettingValueChangedListener listener){
+    public void removeSettingValueChangedListener(SettingValueChangedListener listener, String... keys){
         if(listener != null){
-            listeners.remove(listener);
+            if(keys == null || keys.length == 0){
+                allKeysListeners.remove(listener);
+            } else {
+                for(String key : keys){
+                    if(key != null && !key.isEmpty()){
+                        List<SettingValueChangedListener> listeners = keyListeners.get(key);
+                        if(listeners != null){
+                            listeners.remove(listener);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -110,9 +127,15 @@ class SettingsImpl implements Settings{
      * @param key setting key
      */
     private void runListeners(String oldV, String newV, String key){
-        SettingValueChangedEvent event = new SettingValueChangedEventImpl(oldV, newV, key);
-        for(SettingValueChangedListener l : listeners){
+        SettingValueChangedEvent event = new SettingValueChangedEvent(oldV, newV, key);
+        for(SettingValueChangedListener l : allKeysListeners){
             l.valueChanged(event);
+        }
+        List<SettingValueChangedListener> listeners = keyListeners.get(key);
+        if(listeners != null){
+            for(SettingValueChangedListener l : listeners){
+                l.valueChanged(event);
+            }
         }
     }
 }

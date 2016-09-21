@@ -1,42 +1,56 @@
 package org.whipper.gui;
 
-import org.whipper.gui.Settings.Setting;
-
 /**
- * Setting value changed event.
+ * Basic implementation of {@link SettingValueChangedEvent}.
  *
  * @author Juraj Duráni
  */
-public interface SettingValueChangedEvent{
+public class SettingValueChangedEvent{
+
+    private final String oldV;
+    private final String newV;
+    private final String key;
+
+    /**
+     * Create new event.
+     *
+     * @param oldV old value
+     * @param newV new value
+     * @param key setting key
+     */
+    SettingValueChangedEvent(String oldV, String newV, String key){
+        if(key == null){
+            throw new IllegalArgumentException("Setting key cannot be null");
+        }
+        this.oldV = oldV;
+        this.newV = newV;
+        this.key = key;
+    }
 
     /**
      * Returns old value of the setting.
      *
      * @return old value
      */
-    String oldValue();
+    public String oldValue(){
+        return oldV;
+    }
 
     /**
      * Returns new value of the setting.
      *
      * @return new value
      */
-    String newValue();
+    public String newValue(){
+        return newV;
+    }
 
     /**
      * Returns key of the setting.
      *
      * @return setting key
      */
-    String key();
-
-    /**
-     * Tries to convert current key into {@link Setting}.
-     * If {@link Setting} with such key is not available,
-     * {@code null} is returned.
-     *
-     * @return {@link Setting} or {@code null} if setting
-     *      is not available
-     */
-    Setting keyAsSetting();
+    public String key(){
+        return key;
+    }
 }
