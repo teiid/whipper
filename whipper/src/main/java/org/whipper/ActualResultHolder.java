@@ -12,7 +12,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.codec.binary.Base64;
+import org.whipper.xml.XmlHelper;
 
 /**
  * Class which holds actual result of the query.
@@ -21,7 +21,7 @@ import org.apache.commons.codec.binary.Base64;
  *
  * @author Juraj Duráni
  */
-public class ActualResultHandler {
+public class ActualResultHolder {
 
     private int updateCount = -1;
     private List<String> columnLabels;
@@ -202,13 +202,13 @@ public class ActualResultHandler {
                         o = ((Clob) o).getSubString(1l, (int)((Clob) o).length());
                     } else if(o instanceof Blob){
                         Blob b = (Blob)o;
-                        o = Base64.encodeBase64String(b.getBytes(1l, (int)b.length()));
+                        o = XmlHelper.encode(b.getBytes(1l, (int)b.length()));
                     } else if(o instanceof SQLXML){
                         o = ((SQLXML)o).getString();
                     } else if(o instanceof byte[]){
-                        o = Base64.encodeBase64String((byte[]) o);
-                    } else if (o instanceof Byte[]){
-                        o = Base64.encodeBase64String(toPrimitive((Byte[]) o));
+                        o = XmlHelper.encode((byte[]) o);
+                    } else if(o instanceof Byte[]){
+                        o = XmlHelper.encode(toPrimitive((Byte[]) o));
                     }
                     row.add(o);
                 }

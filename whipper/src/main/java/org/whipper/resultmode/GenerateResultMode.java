@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.whipper.Query;
-import org.whipper.XmlHelper;
 import org.whipper.Whipper.Keys;
+import org.whipper.xml.XmlHelper;
 
 /**
  * This is a generate result mode. It will generate expected result of the query based on its actual result.

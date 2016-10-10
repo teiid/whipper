@@ -11,7 +11,7 @@ import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.whipper.ActualResultHandler;
+import org.whipper.ActualResultHolder;
 import org.whipper.Query;
 import org.whipper.QuerySet;
 import org.whipper.Scenario;
@@ -35,7 +35,7 @@ public class QueryTest {
         QueryResult qr = q.getResult();
         Assert.assertSame("Query from QueryResult.", q, qr.getQuery());
 
-        ActualResultHandler arh = q.getActualResult();
+        ActualResultHolder arh = q.getActualResult();
         Assert.assertTrue("Is result.", arh.isResult());
         Assert.assertFalse("Is update.", arh.isUpdate());
         Assert.assertFalse("Is exception.", arh.isException());
@@ -60,7 +60,7 @@ public class QueryTest {
         QueryResult qr = q.getResult();
         Assert.assertSame("Query from QueryResult.", q, qr.getQuery());
 
-        ActualResultHandler arh = q.getActualResult();
+        ActualResultHolder arh = q.getActualResult();
         Assert.assertTrue("Is result.", arh.isResult());
         Assert.assertFalse("Is update.", arh.isUpdate());
         Assert.assertFalse("Is exception.", arh.isException());
@@ -85,7 +85,7 @@ public class QueryTest {
         QueryResult qr = q.getResult();
         Assert.assertSame("Query from QueryResult.", q, qr.getQuery());
 
-        ActualResultHandler arh = q.getActualResult();
+        ActualResultHolder arh = q.getActualResult();
         Assert.assertTrue("Is result.", arh.isResult());
         Assert.assertFalse("Is update.", arh.isUpdate());
         Assert.assertFalse("Is exception.", arh.isException());
@@ -110,7 +110,7 @@ public class QueryTest {
         QueryResult qr = q.getResult();
         Assert.assertSame("Query from QueryResult.", q, qr.getQuery());
 
-        ActualResultHandler arh = q.getActualResult();
+        ActualResultHolder arh = q.getActualResult();
         Assert.assertFalse("Is result.", arh.isResult());
         Assert.assertFalse("Is update.", arh.isUpdate());
         Assert.assertTrue("Is exception.", arh.isException());
@@ -136,7 +136,7 @@ public class QueryTest {
         QueryResult qr = q.getResult();
         Assert.assertSame("Query from QueryResult.", q, qr.getQuery());
 
-        ActualResultHandler arh = q.getActualResult();
+        ActualResultHolder arh = q.getActualResult();
         Assert.assertFalse("Is result.", arh.isResult());
         Assert.assertFalse("Is update.", arh.isUpdate());
         Assert.assertTrue("Is exception.", arh.isException());
@@ -162,7 +162,7 @@ public class QueryTest {
         QueryResult qr = q.getResult();
         Assert.assertSame("Query from QueryResult.", q, qr.getQuery());
 
-        ActualResultHandler arh = q.getActualResult();
+        ActualResultHolder arh = q.getActualResult();
         Assert.assertFalse("Is result.", arh.isResult());
         Assert.assertFalse("Is update.", arh.isUpdate());
         Assert.assertTrue("Is exception.", arh.isException());
@@ -189,7 +189,7 @@ public class QueryTest {
         QueryResult qr = q.getResult();
         Assert.assertSame("Query from QueryResult.", q, qr.getQuery());
 
-        ActualResultHandler arh = q.getActualResult();
+        ActualResultHolder arh = q.getActualResult();
         Assert.assertFalse("Is result.", arh.isResult());
         Assert.assertFalse("Is update.", arh.isUpdate());
         Assert.assertTrue("Is exception.", arh.isException());

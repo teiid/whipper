@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+    <xs:include schemaLocation="result.xsd"/>
+    <xs:element name="query-error">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="query" type="xs:string"/>
+                <xs:element name="failures">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="failure" maxOccurs="unbounded" type="xs:string"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="actual-result" type="queryResultType"/>
+                <xs:element name="expected-result" type="queryResultType"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

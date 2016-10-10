@@ -8,11 +8,11 @@ import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.whipper.ExpectedResultHandler;
+import org.whipper.ExpectedResultHolder;
 import org.whipper.Query;
 import org.whipper.Whipper;
 import org.whipper.Whipper.Keys;
-import org.whipper.XmlHelper;
+import org.whipper.xml.XmlHelper;
 
 /**
  * This is a compare result mode. It will compare actual result of the query with expected result.
@@ -25,7 +25,7 @@ public class CompareResultMode implements ResultMode {
 
     private File outputDirectory;
     private BigDecimal allowedDivergence;
-    private final ExpectedResultHandler handler = new ExpectedResultHandler();
+    private final ExpectedResultHolder holder = new ExpectedResultHolder();
 
     @Override
     public void resetConfiguration(Properties props) {
@@ -60,11 +60,11 @@ public class CompareResultMode implements ResultMode {
                 q.getSuite().getId() + File.separator + q.getSuite().getId() + "_" + q.getId() + ".xml");
         ResultHandler out = new ResultHandler();
         try{
-            handler.buildResult(result);
-            boolean eq = handler.equals(q.getActualResult(), !q.getSql().toUpperCase().contains(" ORDER BY "), allowedDivergence);
+            holder.buildResult(result);
+            boolean eq = holder.equals(q.getActualResult(), !q.getSql().toUpperCase().contains(" ORDER BY "), allowedDivergence);
             if(!eq){
                 writeErrorFile(q);
-                out.setErrors(handler.getErrors());
+                out.setErrors(holder.getErrors());
             }
         } catch (IOException ex){
             out.setException(ex);
@@ -80,19 +80,19 @@ public class CompareResultMode implements ResultMode {
      */
     private void writeErrorFile(Query q) throws IOException{
         String fileName = q.getScenario().getId() + File.separator + "errors_for_" + getName() + File.separator + q.getSuite().getId() + "_" + q.getId();
-        File errorFileXml = new File(outputDirectory, fileName + ".err");
-        File errorFileTxt = new File(outputDirectory, fileName + "_messages.txt");
+        File errorFileXml = new File(outputDirectory, fileName + "_error.xml");
+        File errorFileTxt = new File(outputDirectory, fileName + "_failures.txt");
         errorFileXml.getParentFile().mkdirs();
         errorFileXml.createNewFile();
         errorFileTxt.createNewFile();
         FileWriter fwTxt = null;
         try{
             fwTxt = new FileWriter(errorFileTxt, false);
-            for(String err : handler.getErrors()){
+            for(String err : holder.getErrors()){
                 fwTxt.write(err);
                 fwTxt.write(System.lineSeparator());
             }
-            XmlHelper.writeError(q, handler, errorFileXml);
+            XmlHelper.writeError(q, holder, errorFileXml);
         } finally {
             Whipper.close(fwTxt);
         }

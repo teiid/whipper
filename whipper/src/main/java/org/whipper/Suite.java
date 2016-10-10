@@ -52,7 +52,7 @@ public class Suite implements Comparable<Suite>, TimeTracker{
     /**
      * Adds new query set.
      *
-     * @param qs query set to be added.
+     * @param qs query set to be added
      */
     public void addQuerySet(QuerySet qs){
         if(qs == null){
@@ -64,7 +64,7 @@ public class Suite implements Comparable<Suite>, TimeTracker{
     /**
      * Returns unmodifiable list of query sets.
      *
-     * @return list of query sets.
+     * @return list of query sets
      */
     public List<QuerySet> getQuerySets(){
         return Collections.unmodifiableList(querySets);
@@ -146,6 +146,7 @@ public class Suite implements Comparable<Suite>, TimeTracker{
         startTime = System.currentTimeMillis();
         try{
             for(QuerySet qs : querySets){
+                // TODO add support for meta-queries
                 qs.runQueries();
                 if(maxEndTime >= 0 && System.currentTimeMillis() >= maxEndTime){
                     throw new MaxTimeExceededException("Max time exceeded.");

@@ -24,6 +24,7 @@ import org.whipper.exceptions.WhipperException;
 import org.whipper.resultmode.NoneResultMode;
 import org.whipper.resultmode.ResultMode;
 import org.whipper.results.TestResultsWriter;
+import org.whipper.xml.XmlHelper;
 
 /**
  * Main class of Whipper.

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+    <xs:element name="query-suite">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="queries" type="queries"/>
+                <xs:element name="meta-queries" type="metaQueries" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="queries">
+        <xs:sequence>
+            <xs:choice maxOccurs="unbounded">
+                <xs:element name="query" type="simpleQuery"/>
+                <xs:element name="query-set" type="multiQuery"/>
+            </xs:choice>
+        </xs:sequence>
+        <xs:attribute name="before" type="xs:string"/>
+        <xs:attribute name="after" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="simpleQuery">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="before" type="xs:string"/>
+                <xs:attribute name="after" type="xs:string"/>
+                <xs:attribute name="name" type="xs:string" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="multiQuery">
+        <xs:sequence>
+            <xs:element name="sql" type="sql" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="before" type="xs:string"/>
+        <xs:attribute name="after" type="xs:string"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="metaQueries">
+        <xs:sequence>
+            <xs:choice maxOccurs="unbounded">
+                <xs:element name="query" type="simpleMetaQuery"/>
+                <xs:element name="query-set" type="multiMetaQuery"/>
+            </xs:choice>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="simpleMetaQuery">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="name" type="xs:string" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="multiMetaQuery">
+        <xs:sequence>
+            <xs:element name="sql" type="sql" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="sql">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="name" type="xs:string" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+</xs:schema>

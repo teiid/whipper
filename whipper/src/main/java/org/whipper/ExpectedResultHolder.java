@@ -8,16 +8,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
+import org.whipper.xml.XmlHelper;
+import org.whipper.xml.result.QueryResultType;
 
 /**
  * Class which holds expected result of the query.
  *
  * @author Juraj Duráni
  */
-public class ExpectedResultHandler {
+public class ExpectedResultHolder {
 
     private int updateCount = -1;
     private List<String> columnLabels;
@@ -27,7 +26,7 @@ public class ExpectedResultHandler {
     private String exceptionClass;
     private String exceptionMessage;
     private String exceptionRegex;
-    private Elements originalResult;
+    private QueryResultType originalResult;
 
     /**
      * Builds holders based on input XML file.
@@ -37,67 +36,86 @@ public class ExpectedResultHandler {
      */
     public void buildResult(File xmlFilePath) throws IOException{
         clear();
-        Document doc = XmlHelper.getDocument(xmlFilePath);
-        Element res = XmlHelper.getResultElement(doc);
-        if(res == null){
-            throw new IOException("There is either no or more than one result in file " + xmlFilePath);
-        }
-        originalResult = res.children();
-        Element update = XmlHelper.getUpdateElement(res);
-        Element exception = XmlHelper.getExceptionElement(res);
-        Element select = XmlHelper.getSelectElement(res);
-        if(update != null){
-            try{
-                updateCount = XmlHelper.getUpdateCount(update);
-            } catch (NumberFormatException ex){
-                throw new IOException("Unable to read update count from result in file " + xmlFilePath, ex);
-            }
-        } else if (exception != null){
-            exceptionClass = XmlHelper.getExceptionClass(exception);
-            exceptionMessage = XmlHelper.getExceptionMessage(exception);
-            exceptionRegex = XmlHelper.getExceptionMessageRegEx(exception);
-            if(exceptionClass == null){
-                throw new IOException("No exception class in result [" + xmlFilePath + "].");
-            }
-            if(exceptionMessage == null && exceptionRegex == null){
-                throw new IOException("No exception message in result [" + xmlFilePath + "].");
-            }
-        } else if (select != null){
-            columnLabels = XmlHelper.getLabels(select);
-            columnTypeNames = XmlHelper.getTypes(select);
-            if(columnLabels.isEmpty() || columnTypeNames.isEmpty()){
-                throw new IOException("No labels or types in result [" + xmlFilePath + "].");
-            }
-            Element table = XmlHelper.getTableElement(select.parent());
-            if(table == null){
-                throw new IOException("No table in result [" + xmlFilePath + "].");
-            } else {
-                int rowCount;
-                int columnCount;
-                try{
-                    rowCount = XmlHelper.getRowCount(table);
-                    columnCount = XmlHelper.getColumnCount(table);
-                } catch (NumberFormatException ex){
-                    throw new IOException("Malformed table. Cannot get row count and column count [" + xmlFilePath + "].", ex);
-                }
-                if(columnCount != columnLabels.size()){
-                    throw new IOException("Expected and actual column count are different [" + xmlFilePath + "].");
-                }
-                List<List<Object>> rowsObjs = XmlHelper.getRows(table);
-                if(rowsObjs.size() != rowCount){
-                    throw new IOException("Expected and actual row count are different [" + xmlFilePath + "].");
-                }
-                rows = new ArrayList<>(rowsObjs.size());
-                for(List<Object> r : rowsObjs){
-                    if(r.size() != columnCount){
-                        throw new IOException("Row " + (rows.size() + 1) + " should contain exactly " + columnCount + " cells [" + xmlFilePath + "].");
-                    }
-                    rows.add(new Row(rows.size() + 1, r));
-                }
-            }
+        XmlHelper.loadResult(xmlFilePath, this);
+    }
+
+    /**
+     * Sets labels.
+     *
+     * @param columnLabels labels to be set
+     */
+    public void setColumnLabels(List<String> columnLabels){
+        this.columnLabels = columnLabels;
+    }
+
+    /**
+     * Sets types.
+     *
+     * @param columnTypeNames types to be set
+     */
+    public void setColumnTypeNames(List<String> columnTypeNames){
+        this.columnTypeNames = columnTypeNames;
+    }
+
+    /**
+     * Sets exception class.
+     *
+     * @param exceptionClass exception class to be set
+     */
+    public void setExceptionClass(String exceptionClass){
+        this.exceptionClass = exceptionClass;
+    }
+
+    /**
+     * Sets exception message.
+     *
+     * @param exceptionMessage exception message to be set
+     */
+    public void setExceptionMessage(String exceptionMessage){
+        this.exceptionMessage = exceptionMessage;
+    }
+
+    /**
+     * Sets exception message regex.
+     *
+     * @param exceptionRegex exception message regex to be set
+     */
+    public void setExceptionRegex(String exceptionRegex){
+        this.exceptionRegex = exceptionRegex;
+    }
+
+    /**
+     * Sets original result as XML object for of this expected result.
+     *
+     * @param originalResult original result to be set
+     */
+    public void setOriginalResult(QueryResultType originalResult){
+        this.originalResult = originalResult;
+    }
+
+    /**
+     * Sets rows.
+     *
+     * @param rows rows to be set
+     */
+    public void setRows(List<List<Object>> rows){
+        if(this.rows != null){
+            this.rows.clear();
         } else {
-            throw new IOException("Unsupported result format in file " + xmlFilePath);
+            this.rows = new ArrayList<>(rows.size());
         }
+        for(List<Object> r : rows){
+            this.rows.add(new Row(this.rows.size() + 1, r));
+        }
+    }
+
+    /**
+     * Sets update count.
+     *
+     * @param updateCount update count to be set
+     */
+    public void setUpdateCount(int updateCount){
+        this.updateCount = updateCount;
     }
 
     /**
@@ -131,7 +149,7 @@ public class ExpectedResultHandler {
      * Returns list of comparison errors.
      *
      * @return errors
-     * @see #equals(ActualResultHandler, boolean, BigDecimal)
+     * @see #equals(ActualResultHolder, boolean, BigDecimal)
      */
     public List<String> getErrors() {
         return errors;
@@ -140,93 +158,125 @@ public class ExpectedResultHandler {
     /**
      * Returns XMl representation of original result.
      *
-     * @return original result.
+     * @return original result
      */
-    public Elements getOriginalResult() {
+    public QueryResultType getOriginalResult() {
         return originalResult;
     }
 
     /**
      * Compares actual result with this expected result.
      *
-     * @param handler actual result
+     * @param holder actual result
      * @param couldSort whether results could be sorted or not
      * @param allowedDivergence will be used in comparison of {@link BigDecimal}, {@code Double} and {@code Float} values
      * @return {@code true} if there were no comparison errors, {@code false} otherwise
      */
-    public boolean equals(ActualResultHandler handler, boolean couldSort, BigDecimal allowedDivergence){
-        if(!handler.isException() && !handler.isUpdate() && !handler.isResult()){
+    public boolean equals(ActualResultHolder holder, boolean couldSort, BigDecimal allowedDivergence){
+        errors.clear();
+        if(!holder.isException() && !holder.isUpdate() && !holder.isResult()){
             addError("Actual result is none of result, update, exception.");
         } else if(isException()){
-            if(handler.isResult()){
-                addError("Expected exception [" + exceptionClass + "] but found table.");
-            } else if(handler.isUpdate()){
-                addError("Expected exception [" + exceptionClass + "] but found update.");   
-            } else {
-                if(!exceptionClass.equals(handler.getOriginalExceptionClass().getName())){
-                    addError("Expected and actual exception class are different. Expected: [" + exceptionClass + "], actual: [" + handler.getOriginalExceptionClass().getName() + "].");
-                } else {
-                    if(exceptionMessage != null && !exceptionMessage.equals(handler.getRootCauseExceptionMessage())){
-                        if(!exceptionMessage.trim().equals(handler.getRootCauseExceptionMessage().trim())){
-                            addError("Expected and actual message are different. Expected: [" + exceptionMessage + "], actual: [" + handler.getRootCauseExceptionMessage() + "].");
-                        }
-                    }
-                    if(exceptionRegex != null && !handler.getRootCauseExceptionMessage().matches(exceptionRegex)){
-                        addError("Message does not match pattern. Message: [" + handler.getRootCauseExceptionMessage() + "], pattern: [" + exceptionRegex + "].");
-                    }
-                }
-            }
+            equalsException(holder);
         } else if(isUpdate()){
-            if(handler.isResult()){
-                addError("Expected update but found table.");
-            } else if(handler.isException()){
-                addError("Expected update but found exception[" + handler.getOriginalExceptionClass().getName() + "].");   
-            } else if(handler.isUpdate()){
-                if(updateCount != handler.getUpdateCount()){
-                    addError("Expected and actual update count are different. Expected: [" + updateCount + "], actual: [" + handler.getUpdateCount() + "].");
-                }
-            }
+            equalsUpdate(holder);
         } else if(isResult()){
-            if(handler.isUpdate()){
-                addError("Expected table but found update.");
-            } else if(handler.isException()){
-                addError("Expected table but found exception[" + handler.getOriginalExceptionClass() + "].");   
-            } else {
-                if(columnLabels.size() != handler.getColumnLabels().size()){
-                    addError("Expected and actual column count are different. Expected: ["
-                        + columnLabels.size() + "], actual: [" + handler.getColumnLabels().size() + "].");
-                } else if(rows.size() != handler.getRows().size()){
-                    addError("Expected and actual row count are different. Expected: [" + rows.size() + "], actual: [" + handler.getRows().size() + "].");
-                } else {
-                    List<String> labels = handler.getColumnLabels();
-                    List<String> types = handler.getColumnTypeNames();
-                    for(int i = 0; i < columnLabels.size(); i++){
-                        if(!columnLabels.get(i).equalsIgnoreCase(labels.get(i))){
-                            addError("Expected and actual column label are different. Expected:["
-                                    + columnLabels.get(i) + "], actual: [" + labels.get(i) + "].");
-                        }
-                        if(!columnTypeNames.get(i).equalsIgnoreCase(types.get(i))){
-                            addError("Expected and actual column type are different. Expected:["
-                                    + columnTypeNames.get(i) + "], actual: [" + types.get(i) + "].");
-                        }
-                    }
-                    if(errors.isEmpty()){
-                        List<Row> actualRows = convertToRows(handler.getRows());
-                        List<Row> expectedRows = new ArrayList<>(rows);
-                        if(couldSort){
-                            Collections.sort(actualRows);
-                            Collections.sort(expectedRows);
-                        }
-                        for(int i = 0; i < expectedRows.size(); i++){
-                            compareRows(expectedRows.get(i), actualRows.get(i), i, allowedDivergence);
-                        }
-                    }
-                }
-            }
+            equalsTable(holder, couldSort, allowedDivergence);
         } else {
             addError("Expected result is none of result, update, exception.");
         }
         return errors.isEmpty();
+    }
+
+    /**
+     * Compares table of actual result and this expected result.
+     *
+     * @param holder actual result
+     * @param couldSort whether result could be sorted or not
+     * @param allowedDivergence for comparison of real numbers
+     */
+    private void equalsTable(ActualResultHolder holder, boolean couldSort, BigDecimal allowedDivergence){
+        if(holder.isUpdate()){
+            addError("Expected table but found update.");
+        } else if(holder.isException()){
+            addError("Expected table but found exception[" + holder.getOriginalExceptionClass() + "].");
+        } else {
+            if(columnLabels.size() != holder.getColumnLabels().size()){
+                addError("Expected and actual column count are different. Expected: ["
+                    + columnLabels.size() + "], actual: [" + holder.getColumnLabels().size() + "].");
+            } else if(rows.size() != holder.getRows().size()){
+                addError("Expected and actual row count are different. Expected: [" + rows.size() + "], actual: [" + holder.getRows().size() + "].");
+            } else {
+                List<String> labels = holder.getColumnLabels();
+                List<String> types = holder.getColumnTypeNames();
+                for(int i = 0; i < columnLabels.size(); i++){
+                    if(!columnLabels.get(i).equalsIgnoreCase(labels.get(i))){
+                        addError("Expected and actual column label are different. Expected:["
+                                + columnLabels.get(i) + "], actual: [" + labels.get(i) + "].");
+                    }
+                    if(!columnTypeNames.get(i).equalsIgnoreCase(types.get(i))){
+                        addError("Expected and actual column type are different. Expected:["
+                                + columnTypeNames.get(i) + "], actual: [" + types.get(i) + "].");
+                    }
+                }
+                if(errors.isEmpty()){
+                    List<Row> actualRows = convertToRows(holder.getRows());
+                    List<Row> expectedRows = new ArrayList<>(rows);
+                    if(couldSort){
+                        Collections.sort(actualRows);
+                        Collections.sort(expectedRows);
+                    }
+                    for(int i = 0; i < expectedRows.size(); i++){
+                        compareRows(expectedRows.get(i), actualRows.get(i), i, allowedDivergence);
+                    }
+                }
+            }
+        }
+
+    }
+
+    /**
+     * Compares update count of actual result and this expected result.
+     *
+     * @param handler actual result
+     */
+    private void equalsUpdate(ActualResultHolder handler){
+        if (handler.isResult()){
+            addError("Expected update but found table.");
+        } else if (handler.isException()){
+            addError("Expected update but found exception[" + handler.getOriginalExceptionClass().getName() + "].");
+        } else if (handler.isUpdate()){
+            if (updateCount != handler.getUpdateCount()) {
+                addError("Expected and actual update count are different. Expected: [" + updateCount + "], actual: ["
+                        + handler.getUpdateCount() + "].");
+            }
+        }
+    }
+
+    /**
+     * Compares exception of actual result and this expected result.
+     *
+     * @param handler actual result
+     */
+    private void equalsException(ActualResultHolder handler){
+        if(handler.isResult()){
+            addError("Expected exception [" + exceptionClass + "] but found table.");
+        } else if(handler.isUpdate()){
+            addError("Expected exception [" + exceptionClass + "] but found update.");
+        } else {
+            if(!exceptionClass.equals(handler.getOriginalExceptionClass().getName())){
+                addError("Expected and actual exception class are different. Expected: [" + exceptionClass + "], actual: [" + handler.getOriginalExceptionClass().getName() + "].");
+            } else {
+                if(exceptionMessage != null && !exceptionMessage.equals(handler.getRootCauseExceptionMessage())){
+                    if(!exceptionMessage.trim().equals(handler.getRootCauseExceptionMessage().trim())){
+                        addError("Expected and actual message are different. Expected: [" + exceptionMessage + "], actual: [" + handler.getRootCauseExceptionMessage() + "].");
+                    }
+                }
+                if(exceptionRegex != null && !handler.getRootCauseExceptionMessage().matches(exceptionRegex)){
+                    addError("Message does not match pattern. Message: [" + handler.getRootCauseExceptionMessage() + "], pattern: [" + exceptionRegex + "].");
+                }
+            }
+        }
     }
 
     /**

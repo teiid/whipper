@@ -8,15 +8,9 @@
     </parent>
     <artifactId>whipper</artifactId>
     <properties>
-        <jsoup.version>1.8.2</jsoup.version>
         <commons.codec.version>1.10</commons.codec.version>
     </properties>
     <dependencies>
-        <dependency>
-            <groupId>org.jsoup</groupId>
-            <artifactId>jsoup</artifactId>
-            <version>${jsoup.version}</version>
-        </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>

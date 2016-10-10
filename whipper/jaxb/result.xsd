@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+    <xs:element name="result">
+        <xs:complexType>
+            <xs:all>
+                <xs:element name="query" type="xs:string"/>
+                <xs:element name="query-result" type="queryResultType"/>
+            </xs:all>
+        </xs:complexType>
+    </xs:element>
+    <xs:complexType name="queryResultType">
+        <xs:choice>
+            <xs:element name="update" type="update"/>
+            <xs:element name="exception" type="queryException"/>
+            <xs:group ref="tableGroup"/>
+            <xs:element name="no-result">
+                <xs:complexType/>
+            </xs:element>
+        </xs:choice>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="update">
+        <xs:attribute name="update-count" type="xs:int" use="required"/>
+    </xs:complexType>
+    <xs:complexType name="queryException">
+        <xs:sequence>
+            <xs:element name="type" type="xs:string"/>
+            <xs:choice>
+                <xs:element name="message" type="xs:string"/>
+                <xs:element name="message-regex" type="xs:string"/>
+            </xs:choice>
+            <xs:element name="class" type="xs:string"/>
+            <xs:element name="stack-trace" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:group name="tableGroup">
+        <xs:sequence>
+            <xs:element name="select" type="select"/>
+            <xs:element name="table" type="table"/>
+        </xs:sequence>
+    </xs:group>
+    <xs:complexType name="select">
+        <xs:sequence>
+            <xs:element name="data-element" minOccurs="1" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:simpleContent>
+                        <xs:extension base="xs:string">
+                            <xs:attribute name="type" type="xs:string" use="required"/>
+                        </xs:extension>
+                    </xs:simpleContent>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="table">
+        <xs:sequence>
+            <xs:element name="table-row" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="table-cell" minOccurs="1" maxOccurs="unbounded">
+                            <xs:complexType>
+                                <xs:sequence>
+                                    <xs:any processContents="lax" minOccurs="0" maxOccurs="1"/>
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="row-count" type="xs:long" use="required"/>
+        <xs:attribute name="column-count" type="xs:int" use="required"/>
+    </xs:complexType>
+</xs:schema>

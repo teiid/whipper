@@ -29,7 +29,7 @@ public class Query implements TimeTracker{
     private final String id;
     private final String sql;
     private final ResultMode resultMode;
-    private final ActualResultHandler handler = new ActualResultHandler();
+    private final ActualResultHolder holder = new ActualResultHolder();
     private QueryResult result;
     private long startTime = -1;
     private long endTime = -1;
@@ -87,11 +87,11 @@ public class Query implements TimeTracker{
         endTime = System.currentTimeMillis();
         result = new QueryResult();
         if(exception != null){
-            handler.buildResult(exception);
+            holder.buildResult(exception);
             valid = scenario.isConnectionValid();
         } else {
             try{
-                handler.buildResult(ps);
+                holder.buildResult(ps);
             } catch (SQLException ex){
                 result.exception = new RuntimeException("Unable to build result: " + ex.toString(), ex);
                 result.pass = false;
@@ -127,8 +127,8 @@ public class Query implements TimeTracker{
      *
      * @return actual result
      */
-    public ActualResultHandler getActualResult() {
-        return handler;
+    public ActualResultHolder getActualResult() {
+        return holder;
     }
 
     /**
