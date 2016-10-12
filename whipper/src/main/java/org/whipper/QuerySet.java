@@ -12,6 +12,7 @@ import org.whipper.Query.QueryResult;
 import org.whipper.exceptions.DbNotAvailableException;
 import org.whipper.exceptions.ExecutionInterruptedException;
 import org.whipper.exceptions.ServerNotAvailableException;
+import org.whipper.resultmode.MetaQuerySetResultMode;
 
 /**
  * Class which represents a query set. Could contains a single query or set of SQL queries.
@@ -25,18 +26,115 @@ public class QuerySet implements TimeTracker{
     private final List<Query> queries = new LinkedList<>();
     private final String id;
     private final boolean fastFail;
+    private final MetaQuerySetResultMode metaQuerySetResultMode;
     private long startTime = -1;
     private long endTime = -1;
+    private QuerySet before;
+    private QuerySet after;
+    private String mainId;
 
     /**
      * Creates a new instance.
      *
      * @param id ID of the query set
      * @param fastFail {@code true} if query set should fail after first failed query
+     * @param metaQuerySetResultMode result mode to handle failed before-set queries.
+     *      If this parameter is {@code null} this query set is considered to be a
+     *      meta-query-set.
      */
-    public QuerySet(String id, boolean fastFail) {
+    public QuerySet(String id, boolean fastFail, MetaQuerySetResultMode metaQuerySetResultMode) {
         this.id = id;
         this.fastFail = fastFail;
+        this.metaQuerySetResultMode = metaQuerySetResultMode;
+    }
+
+    /**
+     * Sets query set which will be run after this query set.
+     *
+     * @param after query set to be run after this query set
+     */
+    public void setAfter(QuerySet after){
+        this.after = after;
+    }
+
+    /**
+     * Sets query set which will be run before this query set.
+     *
+     * @param before query set to be run before this query set
+     */
+    public void setBefore(QuerySet before){
+        this.before = before;
+    }
+
+    /**
+     * Returns before-query-set.
+     *
+     * @return before-query-set
+     */
+    public QuerySet getBefore(){
+        return before;
+    }
+
+    /**
+     * Returns after-query-set.
+     *
+     * @return after-query-set
+     */
+    public QuerySet getAfter(){
+        return after;
+    }
+
+    /**
+     * Marks all queries in this set as failed because
+     * before-set failed.
+     *
+     * @param cause cause of the failure
+     * @param type type of before (i.e. set / suite)
+     * @throws IllegalStateException if this is meta-query-set
+     */
+    public void beforeFailed(Throwable cause, String type) throws IllegalStateException{
+        if(isMeta()){
+            throw new IllegalStateException("Meta-query-set cannot contain before-set.");
+        }
+        for(Query q : queries){
+            q.beforeSetFailed(cause, type);
+        }
+        metaQuerySetResultMode.writeErrorsForMainQuerySet(this);
+    }
+
+    /**
+     * Sets ID of main query set for meta-query-set.
+     *
+     * @param mainId ID of main query set
+     * @throws IllegalStateException if this is not a meta-query-set
+     */
+    public void setMainId(String mainId) throws IllegalStateException{
+        if(!isMeta()){
+            throw new IllegalStateException("This is not a meta-query-set.");
+        }
+        this.mainId = mainId;
+    }
+
+    /**
+     * Returns ID of main query set.
+     *
+     * @return ID of main query set
+     * @throws IllegalStateException if this is not a meta-query-set
+     */
+    public String getMainId() throws IllegalStateException{
+        if(!isMeta()){
+            throw new IllegalStateException("This is not a meta-query-set.");
+        }
+        return mainId;
+    }
+
+    /**
+     * Determines whether this is a meta-query-set.
+     *
+     * @return {@code true} id this is a meta-query-set, {@code false} otherwise
+     */
+    private boolean isMeta(){
+        return metaQuerySetResultMode == null;
     }
 
     /**

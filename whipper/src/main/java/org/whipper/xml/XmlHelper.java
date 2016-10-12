@@ -13,7 +13,9 @@ import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBContext;
@@ -40,8 +42,10 @@ import org.whipper.xml.result.Result;
 import org.whipper.xml.result.Select;
 import org.whipper.xml.result.Table;
 import org.whipper.xml.result.Update;
+import org.whipper.xml.suite.MultiMetaQuery;
 import org.whipper.xml.suite.MultiQuery;
 import org.whipper.xml.suite.QuerySuite;
+import org.whipper.xml.suite.SimpleMetaQuery;
 import org.whipper.xml.suite.SimpleQuery;
 import org.whipper.xml.suite.Sql;
 
@@ -113,26 +117,75 @@ public class XmlHelper {
     public static void loadQueries(File f, Scenario scen, Suite suite, ResultMode resultMode) throws IOException{
         try(FileInputStream fis = new FileInputStream(f)){
             QuerySuite xmlSuite = (QuerySuite)SUITE_UNMARSHALLER.unmarshal(fis);
+            // load meta queries
+            Map<String, QuerySet> meta = new HashMap<>();
+            if(xmlSuite.getMetaQueries() != null){
+                for(Object o : xmlSuite.getMetaQueries().getQueryOrQuerySet()){
+                    QuerySet qs;
+                    if(o instanceof SimpleMetaQuery){
+                        SimpleMetaQuery smq = (SimpleMetaQuery)o;
+                        qs = new QuerySet(smq.getName(), true, null);
+                        qs.addQuery(new Query(scen, suite, qs, smq.getName(), smq.getValue(), scen.getMetaQuerySetResultMode()));
+                    } else {
+                        MultiMetaQuery mmq = (MultiMetaQuery)o;
+                        qs = new QuerySet(mmq.getName(), true, null);
+                        for(Sql sql : mmq.getSql()){
+                            qs.addQuery(new Query(scen, suite, qs, sql.getName(), sql.getValue(), scen.getMetaQuerySetResultMode()));
+                        }
+                    }
+                    meta.put(qs.getId(), qs);
+                }
+            }
+            // set before/after suite
+            suite.setBeforeEach(getMeta(meta, xmlSuite.getQueries().getBeforeEach()));
+            suite.setAfterEach(getMeta(meta, xmlSuite.getQueries().getAfterEach()));
+            suite.setBeforeSuite(getMeta(meta, xmlSuite.getQueries().getBeforeSuite()));
+            suite.setAfterSuite(getMeta(meta, xmlSuite.getQueries().getAfterSuite()));
+
+            // load queries
             for(Object o : xmlSuite.getQueries().getQueryOrQuerySet()){
+                QuerySet qs;
                 if(o instanceof SimpleQuery){
                     SimpleQuery sq = (SimpleQuery)o;
-                    QuerySet qs = new QuerySet(sq.getName(), scen.isFastFail());
+                    qs = new QuerySet(sq.getName(), scen.isFastFail(), scen.getMetaQuerySetResultMode());
                     qs.addQuery(new Query(scen, suite, qs, sq.getName(), sq.getValue(), resultMode));
-                    suite.addQuerySet(qs);
+                    qs.setBefore(getMeta(meta, sq.getBefore()));
+                    qs.setAfter(getMeta(meta, sq.getAfter()));
                 } else {
                     MultiQuery mq = (MultiQuery)o;
-                    QuerySet qs = new QuerySet(mq.getName(), scen.isFastFail());
+                    qs = new QuerySet(mq.getName(), scen.isFastFail(), scen.getMetaQuerySetResultMode());
                     for(Sql sql : mq.getSql()){
                         qs.addQuery(new Query(scen, suite, qs, sql.getName(), sql.getValue(), resultMode));
                     }
-                    suite.addQuerySet(qs);
+                    qs.setBefore(getMeta(meta, mq.getBefore()));
+                    qs.setAfter(getMeta(meta, mq.getAfter()));
                 }
+                suite.addQuerySet(qs);
             }
-            // TODO - load meta queries
-            // TODO - add support for meta queries
         } catch (JAXBException ex) {
             throw new IOException("Cannot read suite file - " + ex.getMessage(), ex);
         }
+    }
+
+    /**
+     * Returns meta-query-set from map {@code meta}.
+     *
+     * @param meta meta-query-set map
+     * @param metaId meta-query-set id
+     * @return meta-query-set with ID {@code metaId} or {@code null} if
+     *      {@code metaId} is {@code null}
+     * @throws IOException if {@code meta} does not contain entry with
+     *      key {@metaId}
+     */
+    private static QuerySet getMeta(Map<String, QuerySet> meta, String metaId) throws IOException{
+        if(metaId == null){
+            return null;
+        }
+        QuerySet out = meta.get(metaId);
+        if(out == null){
+            throw new IOException("Meta-query-set '" + metaId + "' does not exist.");
+        }
+        return out;
     }
 
     /**
@@ -333,7 +386,7 @@ public class XmlHelper {
      * @param arh
      * @param name
      * @param appendStackTrace
-     * @return
+     * @return query result
      */
     private static QueryResultType produceQueryResult(ActualResultHolder arh, String name, boolean appendStackTrace){
         QueryResultType qr = RESULT_OBJECT_FACTORY.createQueryResultType();

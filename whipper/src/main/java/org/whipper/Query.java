@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.whipper.exceptions.DbNotAvailableException;
 import org.whipper.exceptions.ServerNotAvailableException;
-import org.whipper.resultmode.ResultHandler;
+import org.whipper.resultmode.ResultHolder;
 import org.whipper.resultmode.ResultMode;
 
 /**
@@ -69,6 +69,26 @@ public class Query implements TimeTracker{
         return (startTime < 0 || endTime < 0) ? -1l : endTime - startTime;
     }
 
+    public ResultMode getResultMode(){
+        return resultMode;
+    }
+
+    /**
+     * Marks this query as before-set-failed.
+     *
+     * @param cause cause of the failure
+     * @param type type of before (i.e. set / suite)
+     */
+    public void beforeSetFailed(Throwable cause, String type){
+        if(cause != null){
+            result = new QueryResult();
+            SQLException ex = new SQLException(type + " failed [" + cause.getMessage() + "]", cause);
+            result.exception = ex;
+            result.pass = false;
+            holder.buildResult(ex);
+        }
+    }
+
     /**
      * Runs this query.
      */
@@ -113,7 +133,7 @@ public class Query implements TimeTracker{
                 result.exception = exception;
             }
         }
-        ResultHandler rh = resultMode.handleResult(this);
+        ResultHolder rh = resultMode.handleResult(this);
         result.pass = !rh.isFail();
         if(rh.isException()){
             result.exception = rh.getException();

@@ -1,5 +1,6 @@
 package org.whipper.resultmode;
 
+import java.io.File;
 import java.util.Properties;
 
 import org.whipper.Query;
@@ -24,12 +25,21 @@ public interface ResultMode {
      * @param q query
      * @return result handler with result of the query
      */
-    ResultHandler handleResult(Query q);
+    ResultHolder handleResult(Query q);
 
     /**
      * Destroys result mode.
      */
     void destroy();
+
+    /**
+     * Returns path where can be written error for query
+     * or {@code null} if error file is not supported.
+     *
+     * @param q query
+     * @return path to query error file
+     */
+    File getErrorFile(Query q);
 
     /**
      * Returns name of this result mode.

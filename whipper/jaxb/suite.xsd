@@ -16,8 +16,10 @@
                 <xs:element name="query-set" type="multiQuery"/>
             </xs:choice>
         </xs:sequence>
-        <xs:attribute name="before" type="xs:string"/>
-        <xs:attribute name="after" type="xs:string"/>
+        <xs:attribute name="before-suite" type="xs:string"/>
+        <xs:attribute name="after-suite" type="xs:string"/>
+        <xs:attribute name="before-each" type="xs:string"/>
+        <xs:attribute name="after-each" type="xs:string"/>
     </xs:complexType>
 
     <xs:complexType name="simpleQuery">

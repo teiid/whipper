@@ -1,5 +1,6 @@
 package org.whipper.resultmode;
 
+import java.io.File;
 import java.util.Properties;
 
 import org.whipper.Query;
@@ -12,8 +13,8 @@ import org.whipper.Query;
 public class NoneResultMode implements ResultMode {
 
     @Override
-    public ResultHandler handleResult(Query q){
-        return new ResultHandler();
+    public ResultHolder handleResult(Query q){
+        return new ResultHolder();
     }
 
     @Override
@@ -21,6 +22,11 @@ public class NoneResultMode implements ResultMode {
 
     @Override
     public void resetConfiguration(Properties props) {}
+
+    @Override
+    public File getErrorFile(Query q){
+        return null;
+    }
 
     @Override
     public String getName() {

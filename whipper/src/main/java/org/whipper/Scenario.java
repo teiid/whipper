@@ -22,6 +22,7 @@ import org.whipper.exceptions.DbNotAvailableException;
 import org.whipper.exceptions.ExecutionInterruptedException;
 import org.whipper.exceptions.MaxTimeExceededException;
 import org.whipper.exceptions.ServerNotAvailableException;
+import org.whipper.resultmode.MetaQuerySetResultMode;
 
 /**
  * Class which represents scenario. Scenario consists of one or more suites.
@@ -50,6 +51,8 @@ public class Scenario implements TimeTracker{
     private String expectedResultsDirName;
     private String querysetDirName;
     private File outputDir;
+
+    private MetaQuerySetResultMode metaQuerySetResultMode;
 
     /**
      * Creates a new scenario.
@@ -114,6 +117,8 @@ public class Scenario implements TimeTracker{
         }
         String ffStr = props.getProperty(Keys.QUERY_SET_FAST_FAIL, "").trim(); // avoid NPE
         fastFail =  "false".equalsIgnoreCase(ffStr) ? false : true; // default value is true
+        metaQuerySetResultMode = new MetaQuerySetResultMode(id);
+        metaQuerySetResultMode.resetConfiguration(props);
     }
 
     @Override
@@ -129,6 +134,10 @@ public class Scenario implements TimeTracker{
     @Override
     public long getDuration(){
         return (startTime < 0 || endTime < 0) ? -1l : endTime - startTime;
+    }
+
+    public MetaQuerySetResultMode getMetaQuerySetResultMode(){
+        return metaQuerySetResultMode;
     }
 
     /**

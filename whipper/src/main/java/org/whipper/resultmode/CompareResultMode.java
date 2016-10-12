@@ -54,11 +54,26 @@ public class CompareResultMode implements ResultMode {
         return "COMPARE";
     }
 
+    /**
+     * Returns basic name for error file.
+     *
+     * @param q query
+     * @return error file name
+     */
+    private String getFileName(Query q){
+        return q.getScenario().getId() + File.separator + "errors_for_" + getName() + File.separator + q.getSuite().getId() + "_" + q.getId();
+    }
+
     @Override
-    public ResultHandler handleResult(Query q){
+    public File getErrorFile(Query q){
+        return new File(outputDirectory, getFileName(q) + "_error.xml");
+    }
+
+    @Override
+    public ResultHolder handleResult(Query q){
         File result = new File(q.getScenario().getExpectedResultsDir(),
                 q.getSuite().getId() + File.separator + q.getSuite().getId() + "_" + q.getId() + ".xml");
-        ResultHandler out = new ResultHandler();
+        ResultHolder out = new ResultHolder();
         try{
             holder.buildResult(result);
             boolean eq = holder.equals(q.getActualResult(), !q.getSql().toUpperCase().contains(" ORDER BY "), allowedDivergence);
@@ -79,9 +94,8 @@ public class CompareResultMode implements ResultMode {
      * @throws IOException if some error occurs
      */
     private void writeErrorFile(Query q) throws IOException{
-        String fileName = q.getScenario().getId() + File.separator + "errors_for_" + getName() + File.separator + q.getSuite().getId() + "_" + q.getId();
-        File errorFileXml = new File(outputDirectory, fileName + "_error.xml");
-        File errorFileTxt = new File(outputDirectory, fileName + "_failures.txt");
+        File errorFileXml = getErrorFile(q);
+        File errorFileTxt = new File(outputDirectory, getFileName(q) + "_failures.txt");
         errorFileXml.getParentFile().mkdirs();
         errorFileXml.createNewFile();
         errorFileTxt.createNewFile();

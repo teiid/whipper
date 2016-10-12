@@ -35,12 +35,18 @@ public class GenerateResultMode implements ResultMode {
     }
 
     @Override
-    public ResultHandler handleResult(Query q) {
+    public File getErrorFile(Query q){
+        return new File(rootOutputDir, q.getScenario().getId() + File.separator
+                + "errors_for_" + getName() + File.separator + q.getSuite().getId() + "_" + q.getId() + "_error.xml");
+    }
+
+    @Override
+    public ResultHolder handleResult(Query q) {
         File outputDir = new File(rootOutputDir, getName()
                 + File.separator + q.getScenario().getQuerysetDirName()
                 + File.separator + q.getScenario().getExpectedResultsDirName()
                 + File.separator + q.getSuite().getId());
-        ResultHandler out = new ResultHandler();
+        ResultHolder out = new ResultHolder();
         if(outputDir.exists() && outputDir.isFile()){
             out.setException(new IOException("Cannot generate result: " + outputDir.getAbsolutePath() + " is file."));
         } else if(!outputDir.exists() && !outputDir.mkdirs()){

@@ -14,6 +14,7 @@ import org.whipper.Query.QueryResult;
 import org.whipper.exceptions.DbNotAvailableException;
 import org.whipper.exceptions.ExecutionInterruptedException;
 import org.whipper.exceptions.ServerNotAvailableException;
+import org.whipper.resultmode.MetaQuerySetResultMode;
 
 public class QuerySetTest {
 
@@ -22,12 +23,12 @@ public class QuerySetTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void addNullQueryTest(){
-        new QuerySet("", true).addQuery(null);
+        new QuerySet("", true, null).addQuery(null);
     }
 
     @Test
     public void numberOfAllQueriesTest() throws Exception{
-        QuerySet qs = new QuerySet("", true);
+        QuerySet qs = new QuerySet("", true, null);
         qs.addQuery(getQuery(true, null));
         qs.addQuery(getQuery(true, null));
         qs.addQuery(getQuery(true, null));
@@ -38,7 +39,7 @@ public class QuerySetTest {
 
     @Test
     public void numberOfExecutedQueriesTest() throws Exception{
-        QuerySet qs = new QuerySet("", true);
+        QuerySet qs = new QuerySet("", true, null);
         Assert.assertEquals("Number of executed queries.", 0, qs.getNumberOfExecutedQueries());
         qs.addQuery(getQuery(true, null));
         qs.addQuery(getQuery(true, null));
@@ -50,7 +51,7 @@ public class QuerySetTest {
 
     @Test
     public void numberOfPassedQueriesTest() throws Exception{
-        QuerySet qs = new QuerySet("", true);
+        QuerySet qs = new QuerySet("", true, null);
         Assert.assertEquals("Number of passed queries.", 0, qs.getNumberOfPassedQueries());
         qs.addQuery(getQuery(true, null));
         qs.addQuery(getQuery(true, null));
@@ -62,7 +63,7 @@ public class QuerySetTest {
 
     @Test
     public void numberOfFailedQueriesTest() throws Exception{
-        QuerySet qs = new QuerySet("", true);
+        QuerySet qs = new QuerySet("", true, null);
         Assert.assertEquals("Number of failed queries.", 0, qs.getNumberOfFailedQueries());
         qs.addQuery(getQuery(true, null));
         qs.addQuery(getQuery(true, null));
@@ -74,7 +75,7 @@ public class QuerySetTest {
 
     @Test
     public void fastFailTrueTest() throws Exception{
-        QuerySet qs = new QuerySet("", true);
+        QuerySet qs = new QuerySet("", true, null);
         Query q1 = getQuery(true, null);
         Query q2 = getQuery(false, null);
         Query q3 = getQuery(true, null);
@@ -94,7 +95,7 @@ public class QuerySetTest {
 
     @Test
     public void fastFailFalseTest() throws Exception{
-        QuerySet qs = new QuerySet("", false);
+        QuerySet qs = new QuerySet("", false, null);
         Query q1 = getQuery(true, null);
         Query q2 = getQuery(false, null);
         Query q3 = getQuery(true, null);
@@ -114,21 +115,21 @@ public class QuerySetTest {
 
     @Test(expected = ServerNotAvailableException.class)
     public void serverNotAvailableTest() throws Exception{
-        QuerySet qs = new QuerySet("", true);
+        QuerySet qs = new QuerySet("", true, null);
         qs.addQuery(getQuery(false, new ServerNotAvailableException("Thrown in test.")));
         qs.runQueries();
     }
 
     @Test(expected = DbNotAvailableException.class)
     public void dbNotAvailableTest() throws Exception{
-        QuerySet qs = new QuerySet("", true);
+        QuerySet qs = new QuerySet("", true, null);
         qs.addQuery(getQuery(false, new DbNotAvailableException("Thrown in test.")));
         qs.runQueries();
     }
 
     @Test(expected = ExecutionInterruptedException.class)
     public void executionInterruptedTest() throws Exception{
-        QuerySet qs = new QuerySet("", true);
+        QuerySet qs = new QuerySet("", true, null);
         qs.addQuery(getQuery(true, null));
         Thread.currentThread().interrupt();
         try{
@@ -137,6 +138,48 @@ public class QuerySetTest {
             // clear flag
             Thread.interrupted();
         }
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void beforeFailedOnMetaTest(){
+        new QuerySet("", true, null).beforeFailed(null, null);
+    }
+
+    @Test
+    public void beforeFailedTest(){
+        Query q1 = Mockito.mock(Query.class);
+        Query q2 = Mockito.mock(Query.class);
+        Query q3 = Mockito.mock(Query.class);
+        MetaQuerySetResultMode rm = Mockito.mock(MetaQuerySetResultMode.class);
+        QuerySet qs = new QuerySet("", true, rm);
+        qs.addQuery(q1);
+        qs.addQuery(q2);
+        qs.addQuery(q3);
+        Exception ex = Mockito.mock(Exception.class);
+        String type = "aaa";
+        qs.beforeFailed(ex, type);
+        Mockito.verify(rm).writeErrorsForMainQuerySet(Mockito.same(qs));
+        Mockito.verify(q1).beforeSetFailed(Mockito.same(ex), Mockito.same(type));
+        Mockito.verify(q2).beforeSetFailed(Mockito.same(ex), Mockito.same(type));
+        Mockito.verify(q3).beforeSetFailed(Mockito.same(ex), Mockito.same(type));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setMainIdFailOnNonMetaTest(){
+        new QuerySet("", true, Mockito.mock(MetaQuerySetResultMode.class)).setMainId("");
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void getMainIdFailOnNonMetaTest(){
+        new QuerySet("", true, Mockito.mock(MetaQuerySetResultMode.class)).getMainId();
+    }
+
+    @Test
+    public void setGetMainIdOkOnMetaTest(){
+        QuerySet qs = new QuerySet("", true, null);
+        String id = "aaa";
+        qs.setMainId(id);
+        Assert.assertEquals("Main ID.", id, qs.getMainId());
     }
 
     private Query getQuery(boolean pass, Exception ex){

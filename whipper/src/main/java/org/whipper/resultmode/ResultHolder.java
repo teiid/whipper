@@ -8,7 +8,7 @@ import java.util.List;
  *
  * @author Juraj Duráni
  */
-public class ResultHandler {
+public class ResultHolder {
 
     private Throwable exception;
     private List<String> errors;

@@ -19,7 +19,7 @@ import org.whipper.Suite;
 import org.whipper.Query.QueryResult;
 import org.whipper.exceptions.DbNotAvailableException;
 import org.whipper.exceptions.ServerNotAvailableException;
-import org.whipper.resultmode.ResultHandler;
+import org.whipper.resultmode.ResultHolder;
 import org.whipper.resultmode.ResultMode;
 
 public class QueryTest {
@@ -205,7 +205,7 @@ public class QueryTest {
         Assert.assertNull("Query result - errors", qr.getErrors());
     }
 
-    private Query getQuery(Connection con, ResultHandler rh, boolean valid){
+    private Query getQuery(Connection con, ResultHolder rh, boolean valid){
         Scenario sc = Mockito.mock(Scenario.class);
         Mockito.doReturn(con).when(sc).getConnection();
         Mockito.doReturn(valid).when(sc).isConnectionValid();
@@ -218,8 +218,8 @@ public class QueryTest {
         return new Query(sc, su, qs, "query" + count++, "SELECT 1", rm);
     }
 
-    private ResultHandler getResultHandler(boolean fail, boolean error, boolean exception, Throwable ex, String err){
-        ResultHandler rh = Mockito.mock(ResultHandler.class);
+    private ResultHolder getResultHandler(boolean fail, boolean error, boolean exception, Throwable ex, String err){
+        ResultHolder rh = Mockito.mock(ResultHolder.class);
         Mockito.doReturn(fail).when(rh).isFail();
         Mockito.doReturn(error).when(rh).isError();
         Mockito.doReturn(exception).when(rh).isException();
