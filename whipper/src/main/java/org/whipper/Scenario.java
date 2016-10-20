@@ -312,8 +312,7 @@ public class Scenario implements TimeTracker{
     public void run() throws ServerNotAvailableException, DbNotAvailableException,
                 MaxTimeExceededException, ExecutionInterruptedException{
         LOG.info("Starting scenario {}.", id);
-        long maxEndTime = timeForOneQuery * getNumberOfAllQueries();
-        maxEndTime = maxEndTime < 0 ? -1l : maxEndTime + System.currentTimeMillis();
+        long maxEndTime = timeForOneQuery < 0 ? -1l : timeForOneQuery * getNumberOfAllQueries() + System.currentTimeMillis();
         startTime = System.currentTimeMillis();
         try{
             Collections.sort(suites);
