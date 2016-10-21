@@ -440,6 +440,7 @@ public class XmlHelper {
                     }
                     r.getTableCell().add(c);
                 }
+                t.getTableRow().add(r);
             }
             qr.setTable(t);
         } else {
