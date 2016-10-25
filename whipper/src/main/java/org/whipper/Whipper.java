@@ -52,7 +52,7 @@ public class Whipper {
         public static final String SCENARIO = "scenario.file";
         public static final String INCLUDE_SCENARIOS = "whipper.scenario.include";
         public static final String EXCLUDE_SCENARIOS = "whipper.scenario.exclude";
-        public static final String ARTEFACTS_DIR = "queryset.artifacts.dir";
+        public static final String ARTIFACTS_DIR = "queryset.artifacts.dir";
         public static final String OUTPUT_DIR = "output.dir";
         public static final String RESULT_MODE = "result.mode";
         public static final String ALLOWED_DIVERGENCE = "allowed.divergence";
@@ -283,9 +283,9 @@ public class Whipper {
                     });
                 }
             }
-            String artefactsDirStr = original.getProperty(Keys.ARTEFACTS_DIR);
+            String artefactsDirStr = original.getProperty(Keys.ARTIFACTS_DIR);
             if(artefactsDirStr == null){
-                LOG.error("Property {} is not set.", Keys.ARTEFACTS_DIR);
+                LOG.error("Property {} is not set.", Keys.ARTIFACTS_DIR);
                 artefactsDir = new File("");
             } else {
                 artefactsDir = new File(artefactsDirStr);

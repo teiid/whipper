@@ -73,7 +73,7 @@ public class Scenario implements TimeTracker{
         afterQuery = props.getProperty(Keys.AFTER_QUERY);
         expectedResultsDirName = props.getProperty(Keys.EXPECTED_RESULTS_DIR);
         querysetDirName = props.getProperty(Keys.QUERYSET_DIR);
-        expectedResultsDir = new File(props.getProperty(Keys.ARTEFACTS_DIR),
+        expectedResultsDir = new File(props.getProperty(Keys.ARTIFACTS_DIR),
                 querysetDirName + File.separator + expectedResultsDirName);
         if(!expectedResultsDir.exists() || !expectedResultsDir.isDirectory()){
             throw new IllegalArgumentException("Expected results directory " + expectedResultsDir +
