@@ -176,7 +176,7 @@ public class DefaultTestResultsWriter implements TestResultsWriter{
                     appendLine(fwTotals, "Summary totals");
                     appendLine(fwTotals, "==============");
                     appendLine(fwTotals, pad("Scenario", NAME_PAD) + pad("Pass", RESULTS_PAD)
-                            + pad("Fail", RESULTS_PAD) + pad("Total", RESULTS_PAD) + pad("Skipped", RESULTS_PAD));
+                            + pad("Fail", RESULTS_PAD) + pad("Skip", RESULTS_PAD) + pad("Total", RESULTS_PAD));
                 }
                 if(!errorsExists){
                     appendLine(fwErrors, "==============");
@@ -190,8 +190,8 @@ public class DefaultTestResultsWriter implements TestResultsWriter{
                 int pass = scen.getNumberOfPassedQueries();
                 int all = scen.getNumberOfAllQueries();
                 appendLine(fwTotals, pad(scen.getId(), NAME_PAD) + pad(Integer.toString(pass), RESULTS_PAD)
-                        + pad(Integer.toString(fail), RESULTS_PAD) + pad(Integer.toString(all), RESULTS_PAD)
-                        + pad(Integer.toString(all - fail - pass), RESULTS_PAD));
+                        + pad(Integer.toString(fail), RESULTS_PAD) + pad(Integer.toString(all - fail - pass), RESULTS_PAD)
+                        + pad(Integer.toString(all), RESULTS_PAD));
             }
         } catch (IOException ex) {
             LOG.error("Unable to write result of scenario " + scen.getId(), ex);
@@ -244,25 +244,28 @@ public class DefaultTestResultsWriter implements TestResultsWriter{
         appendLine(fw, "Elapsed:              " + timeToString(scen.getDuration()));
         appendLine(fw, "----------------------");
         appendLine(fw, "Number of all suites: " + scen.getSuites().size());
-        appendLine(fw, pad("Name", NAME_PAD)
-                + pad("Pass", RESULTS_PAD) + pad("Fail", RESULTS_PAD) + pad("Total", RESULTS_PAD));
+        appendLine(fw, pad("Name", NAME_PAD) + pad("Pass", RESULTS_PAD) + pad("Fail", RESULTS_PAD)
+            + pad("Skip", RESULTS_PAD) + pad("Total", RESULTS_PAD));
         int overallAll = 0;
         int overallPass = 0;
         int overallFail = 0;
+        int overallSkip = 0;
         for(Suite s : scen.getSuites()){
             int all = s.getNumberOfAllQueries();
             int pass = s.getNumberOfPassedQueries();
             int fail = s.getNumberOfFailedQueries();
+            int skip = all - fail - pass;
             appendLine(fw, pad(s.getId(), NAME_PAD) + pad(Integer.toString(pass), RESULTS_PAD)
-                    + pad(Integer.toString(fail), RESULTS_PAD)
+                    + pad(Integer.toString(fail), RESULTS_PAD) + pad(Integer.toString(skip), RESULTS_PAD)
                     + pad(Integer.toString(all), RESULTS_PAD));
             overallAll += all;
             overallPass += pass;
             overallFail += fail;
+            overallSkip += skip;
         }
         appendLine(fw, "----------------------");
         appendLine(fw, pad("Totals", NAME_PAD) + pad(Integer.toString(overallPass), RESULTS_PAD)
-                + pad(Integer.toString(overallFail), RESULTS_PAD)
+                + pad(Integer.toString(overallFail), RESULTS_PAD) + pad(Integer.toString(overallSkip), RESULTS_PAD)
                 + pad(Integer.toString(overallAll), RESULTS_PAD));
     }
 

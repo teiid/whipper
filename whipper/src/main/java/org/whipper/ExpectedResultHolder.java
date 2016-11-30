@@ -302,9 +302,9 @@ public class ExpectedResultHolder {
      * @param allowedDivergence allowed divergence
      */
     private void compareRows(Row expected, Row actual, int rowNum, BigDecimal allowedDivergence){
-        final String rowId = "[row " + rowNum + "; row number in expected result " + expected.idx + "; row number in actual result" + actual.idx + "].";
+        final String rowId = "[row " + (rowNum + 1) + "; row number in expected result " + expected.idx + "; row number in actual result " + actual.idx + "].";
         for(int i = 0; i < expected.cells.size(); i++){
-            final String cellId = "[cell " + (i+1) + "]" + rowId;
+            final String cellId = "[cell " + (i + 1) + "]" + rowId;
             Object ex = expected.cells.get(i);
             Object ac = actual.cells.get(i);
             if(ex == null && ac == null){
@@ -344,9 +344,11 @@ public class ExpectedResultHolder {
                         } else {
                             for(int c = 0; c < v1.length; c++){
                                 if(v1[c] != v2[c]){
-                                    addError("Actual and expected value are different at position " + (c + 1) + ". Actual: [..."
-                                            + new String(v2, Math.max(0, c - 10), Math.min(v2.length - c, 20)) + "...], expected: [..."
-                                            + new String(v1, Math.max(0, c - 10), Math.min(v1.length - c, 20)) + "...]. " + cellId);
+                                    int offset = Math.max(0, c - 10);
+                                    int count = Math.min(Math.min(c + offset + 10, v1.length - c + 10), 20);
+                                    addError("Actual and expected value are different at position " + c + ". Actual: [..."
+                                            + new String(v2, offset, count) + "...], expected: [..."
+                                            + new String(v1, offset, count) + "...]. " + cellId);
                                     break;
                                 }
                             }

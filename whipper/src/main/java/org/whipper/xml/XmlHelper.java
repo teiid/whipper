@@ -439,6 +439,7 @@ public class XmlHelper {
                         c.setAny(elem);
                     }
                     r.getTableCell().add(c);
+                    i++;
                 }
                 t.getTableRow().add(r);
             }
