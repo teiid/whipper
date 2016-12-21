@@ -6,6 +6,43 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>whipper-gui</artifactId>
+    <packaging>war</packaging>
+    <name>Whipper GUI - Web UI</name>
+    <description>Graphical User Interface for running Whipper and checking results.</description>
+    <properties>
+        <web.app.base.name>whipper-web-ui</web.app.base.name>
+        <javaxee.we.api.version>7.0</javaxee.we.api.version>
+        <swagger.version>1.5.9</swagger.version>
+        <swagger.plugin.version>3.1.2</swagger.plugin.version>
+        <wildfly.swarm.plugin.version>2016.12.1</wildfly.swarm.plugin.version>
+        <maven.war.plugin.version>2.6</maven.war.plugin.version>
+    </properties>
+    <profiles>
+        <profile>
+            <id>swarm</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.wildfly.swarm</groupId>
+                        <artifactId>wildfly-swarm-plugin</artifactId>
+                        <version>${wildfly.swarm.plugin.version}</version>
+                        <configuration>
+                            <properties>
+                                <swarm.context.path>${web.app.base.name}</swarm.context.path>
+                            </properties>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>package</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -20,5 +57,55 @@
             <artifactId>whipper</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-web-api</artifactId>
+            <version>${javaxee.we.api.version}</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>${maven.war.plugin.version}</version>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                    <warName>${web.app.base.name}</warName>
+                    <packagingExcludes>%regex[.*log4j.*]</packagingExcludes>
+                    <excludes></excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.github.kongchen</groupId>
+                <artifactId>swagger-maven-plugin</artifactId>
+                <version>${swagger.plugin.version}</version>
+                <configuration>
+                    <apiSources>
+                        <apiSource>
+                            <springmvc>false</springmvc>
+                            <locations>org.whipper.gui.web</locations>
+                            <schemes>http</schemes>
+                            <basePath>/${web.app.base.name}/whipper-ui</basePath>
+                            <info>
+                                <title>Whipper REST API</title>
+                                <version>${project.version}</version>
+                                <description>Whiper REST API specification</description>
+                            </info>
+                            <swaggerDirectory>src/main/webapp/</swaggerDirectory>
+                        </apiSource>
+                    </apiSources>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

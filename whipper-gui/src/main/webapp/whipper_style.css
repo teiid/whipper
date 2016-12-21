@@ -1,0 +1,22 @@
+@CHARSET "UTF-8";
+
+body {
+     font-family: "Arial Black", Gadget, sans-serif;
+}
+
+h1 {
+     font-size: 20px;
+}
+
+a {
+     text-decoration: none;
+     color: blue;
+}
+
+a:HOVER {
+     color: red;
+}
+
+a:ACTIVE {
+     color: red;
+}

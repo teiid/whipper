@@ -3,6 +3,7 @@
 .settings
 **/*.log
 target
+swagger.json
 whipper/src/main/java/org/whipper/xml/result/*.java
 whipper/src/main/java/org/whipper/xml/suite/*.java
 whipper/src/main/java/org/whipper/xml/error/*.java
