@@ -345,7 +345,7 @@ public class ExpectedResultHolder {
                             for(int c = 0; c < v1.length; c++){
                                 if(v1[c] != v2[c]){
                                     int offset = Math.max(0, c - 10);
-                                    int count = Math.min(Math.min(c + offset + 10, v1.length - c + 10), 20);
+                                    int count = Math.min(Math.min(Math.min(c + offset + 10, v1.length - c + 10), 20), v1.length);
                                     addError("Actual and expected value are different at position " + c + ". Actual: [..."
                                             + new String(v2, offset, count) + "...], expected: [..."
                                             + new String(v1, offset, count) + "...]. " + cellId);
