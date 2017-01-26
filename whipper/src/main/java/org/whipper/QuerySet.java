@@ -27,6 +27,7 @@ public class QuerySet implements TimeTracker{
     private final String id;
     private final boolean fastFail;
     private final MetaQuerySetResultMode metaQuerySetResultMode;
+    private final List<ProgressMonitor> monitors = new LinkedList<>();
     private long startTime = -1;
     private long endTime = -1;
     private QuerySet before;
@@ -47,6 +48,19 @@ public class QuerySet implements TimeTracker{
         this.fastFail = fastFail;
         this.metaQuerySetResultMode = metaQuerySetResultMode;
     }
+
+    public void setProgressMonitors(List<ProgressMonitor> monitors){
+        this.monitors.clear();
+        if(monitors != null){
+            this.monitors.addAll(monitors);
+        }
+        for(Query q : queries){
+            q.setProgressMonitors(monitors);
+        }
+        if(after != null){ after.setProgressMonitors(monitors); }
+        if(before != null){ before.setProgressMonitors(monitors); }
+    }
+
 
     /**
      * Sets query set which will be run after this query set.
@@ -96,10 +110,15 @@ public class QuerySet implements TimeTracker{
         if(isMeta()){
             throw new IllegalStateException("Meta-query-set cannot contain before-set.");
         }
-        for(Query q : queries){
-            q.beforeSetFailed(cause, type);
+        runBeforeMonitors();
+        try{
+            for(Query q : queries){
+                q.beforeSetFailed(cause, type);
+            }
+            metaQuerySetResultMode.writeErrorsForMainQuerySet(this);
+        } finally {
+            runAfterMonitors();
         }
-        metaQuerySetResultMode.writeErrorsForMainQuerySet(this);
     }
 
     /**
@@ -133,7 +152,7 @@ public class QuerySet implements TimeTracker{
      *
      * @return {@code true} id this is a meta-query-set, {@code false} otherwise
      */
-    private boolean isMeta(){
+    boolean isMeta(){
         return metaQuerySetResultMode == null;
     }
 
@@ -181,6 +200,7 @@ public class QuerySet implements TimeTracker{
      * @throws ExecutionInterruptedException if thread has been interrupted
      */
     public void runQueries() throws ServerNotAvailableException, DbNotAvailableException, ExecutionInterruptedException{
+        runBeforeMonitors();
         if(queries.size() > 1){
             LOG.info("Starting query set {}.", id);
         }
@@ -212,6 +232,27 @@ public class QuerySet implements TimeTracker{
         } finally {
             if(queries.size() > 1){
                 LOG.info("Query set {} finished.", id);
+            }
+            runAfterMonitors();
+        }
+    }
+
+    private void runAfterMonitors(){
+        for(ProgressMonitor pm : monitors){
+            if(isMeta()){
+                pm.metaQuerySetFinished(this);
+            } else {
+                pm.querySetFinished(this);
+            }
+        }
+    }
+
+    private void runBeforeMonitors(){
+        for(ProgressMonitor pm : monitors){
+            if(isMeta()){
+                pm.startingMetaQuerySet(this);
+            } else {
+                pm.startingQuerySet(this);
             }
         }
     }

@@ -7,7 +7,6 @@ import java.io.Writer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +14,7 @@ import org.whipper.Query;
 import org.whipper.Query.QueryResult;
 import org.whipper.Scenario;
 import org.whipper.Suite;
-import org.whipper.Whipper.Keys;
+import org.whipper.WhipperProperties;
 
 /**
  * Default test results writer.
@@ -36,13 +35,12 @@ public class DefaultTestResultsWriter implements TestResultsWriter{
     private File totals;
 
     @Override
-    public boolean init(Properties props){
-        String out = props.getProperty(Keys.OUTPUT_DIR);
-        if(out == null){
+    public boolean init(WhipperProperties props){
+        outputDir = props.getOutputDir();
+        if(outputDir == null){
             LOG.error("Cannot write results. Output directory is not set.");
             return false;
         }
-        outputDir = new File(out);
         if(outputDir.exists() && !outputDir.isDirectory()){
             LOG.error("Cannot write results. Output directory is not a directory [{}].", outputDir.getAbsolutePath());
             return false;
@@ -51,8 +49,8 @@ public class DefaultTestResultsWriter implements TestResultsWriter{
             LOG.error("Cannot write results. Output directory cannot be created [{}].", outputDir.getAbsolutePath());
             return false;
         }
-        errors = new File(outputDir, "Summary_errors.txt");
-        totals = new File(outputDir, "Summary_totals.txt");
+        errors = summaryErrors(outputDir);
+        totals = summaryTotals(outputDir);
         return true;
     }
 
@@ -66,7 +64,7 @@ public class DefaultTestResultsWriter implements TestResultsWriter{
     @Override
     public void writeResultOfScenario(Scenario scen){
         writeSummary(scen);
-        File outDir = new File(outputDir, scen.getId());
+        File outDir = scenarioDir(outputDir, scen.getId());
         if(!outDir.exists() && !outDir.mkdirs()){
             LOG.error("Cannot create output directory of the scenario {}", outDir.getAbsolutePath());
         } else if(outDir.exists() && !outDir.isDirectory()){
@@ -86,8 +84,8 @@ public class DefaultTestResultsWriter implements TestResultsWriter{
      * @param suite suite
      */
     private void writeResultOfSuite(File outDir, Suite suite){
-        File out1 = new File(outDir, suite.getId() + ".txt");
-        File out2 = new File(outDir, suite.getId() + TS_FORMAT.format(new java.util.Date(System.currentTimeMillis()))  + ".txt");
+        File out1 = suiteSummary(outDir, suite.getId(), false);
+        File out2 = suiteSummary(outDir, suite.getId(), true);
         try{
             if(!out1.exists()){
                 out1.createNewFile();
@@ -156,7 +154,7 @@ public class DefaultTestResultsWriter implements TestResultsWriter{
      */
     private void writeSummary(Scenario scen){
         try{
-            File out = new File(outputDir, "Summary_" + scen.getId() + ".txt");
+            File out = scenarioSummary(outputDir, scen.getId());
             if(!out.exists()){
                 out.createNewFile();
             }
@@ -346,5 +344,27 @@ public class DefaultTestResultsWriter implements TestResultsWriter{
             milisStr = "0" + milisStr;
         }
         return hoursStr + ":" + minStr + ":" + secStr + "." + milisStr;
+    }
+
+    public static File scenarioDir(File base, String id){
+        return new File(base, id);
+    }
+
+    public static File suiteSummary(File scenarioBase, String id, boolean withTimeStamp){
+        return withTimeStamp
+                ? new File(scenarioBase, id + ".txt")
+                : new File(scenarioBase, id + TS_FORMAT.format(new java.util.Date(System.currentTimeMillis()))  + ".txt");
+    }
+
+    public static File scenarioSummary(File base, String id){
+        return new File(base, "Summary_" + id + ".txt");
+    }
+
+    public static File summaryErrors(File base){
+        return new File(base, "Summary_errors.txt");
+    }
+
+    public static File summaryTotals(File base){
+        return new File(base, "Summary_totals.txt");
     }
 }

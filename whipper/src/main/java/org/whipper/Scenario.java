@@ -11,12 +11,10 @@ import java.text.DateFormat;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 import java.util.ServiceLoader;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.whipper.Whipper.Keys;
 import org.whipper.connection.ConnectionFactory;
 import org.whipper.exceptions.DbNotAvailableException;
 import org.whipper.exceptions.ExecutionInterruptedException;
@@ -35,6 +33,7 @@ public class Scenario implements TimeTracker{
 
     private final String id;
     private final List<Suite> suites = new LinkedList<>();
+    private final List<ProgressMonitor> monitors = new LinkedList<>();
 
     private long startTime = -1;
     private long endTime = -1;
@@ -59,8 +58,18 @@ public class Scenario implements TimeTracker{
      *
      * @param id ID of the scenario
      */
-    public Scenario(String id) {
+    public Scenario(String id){
         this.id = id;
+    }
+
+    public void setProgressMonitors(List<ProgressMonitor> monitors){
+        this.monitors.clear();
+        if(monitors != null){
+            this.monitors.addAll(monitors);
+        }
+        for(Suite s : suites){
+            s.setProgressMonitors(monitors);
+        }
     }
 
     /**
@@ -68,26 +77,26 @@ public class Scenario implements TimeTracker{
      *
      * @param props test properties
      */
-    public void init(Properties props){
-        pingQuery = props.getProperty(Keys.PING_QUERY);
-        afterQuery = props.getProperty(Keys.AFTER_QUERY);
-        expectedResultsDirName = props.getProperty(Keys.EXPECTED_RESULTS_DIR);
-        querysetDirName = props.getProperty(Keys.QUERYSET_DIR);
-        expectedResultsDir = new File(props.getProperty(Keys.ARTIFACTS_DIR),
+    public void init(WhipperProperties props){
+        pingQuery = props.getPingQuery();
+        afterQuery = props.getAfterQuery();
+        expectedResultsDirName = props.getExpectedResultsDir();
+        querysetDirName = props.getQuerySetDir();
+        expectedResultsDir = new File(props.getArtifacstDir(),
                 querysetDirName + File.separator + expectedResultsDirName);
         if(!expectedResultsDir.exists() || !expectedResultsDir.isDirectory()){
             throw new IllegalArgumentException("Expected results directory " + expectedResultsDir +
                     " either does not exist or is not a directory.");
         }
 
-        outputDir = new File(props.getProperty(Keys.OUTPUT_DIR), id);
+        outputDir = new File(props.getOutputDir(), id);
         if(!outputDir.exists() && !outputDir.mkdirs()){
             throw new RuntimeException("Cannot create output directory " + outputDir.getAbsolutePath());
         } else if (outputDir.exists() && outputDir.isFile()){
             throw new RuntimeException("Cannot create output directory. " + outputDir.getAbsolutePath() + " is file.");
         }
 
-        String conFacName = props.getProperty(Keys.CONNECTION_STRATEGY);
+        String conFacName = props.getConnectionStrategy();
         if(conFacName == null){
             LOG.warn("Connection strategy not set. Setting to driver.");
             conFacName = "DRIVER";
@@ -103,20 +112,11 @@ public class Scenario implements TimeTracker{
         }
 
         connectionFactory.init(props);
-        String timeStr = props.getProperty(Keys.TIME_FOR_ONE_QUERY);
-        if(timeStr == null){
-            LOG.warn("Time for one query is not set.");
-            timeForOneQuery = -1l;
-        } else {
-            try{
-                timeForOneQuery = Long.parseLong(timeStr);
-            } catch (NumberFormatException ex){
-                LOG.warn("Time for one query is not a number.", ex);
-                timeForOneQuery = -1;
-            }
+        timeForOneQuery = props.getTimeForOneQuery();
+        if(timeForOneQuery == -1l){
+            LOG.warn("Time for one query is set to -1.");
         }
-        String ffStr = props.getProperty(Keys.QUERY_SET_FAST_FAIL, "").trim(); // avoid NPE
-        fastFail =  "false".equalsIgnoreCase(ffStr) ? false : true; // default value is true
+        fastFail =  props.getQuerySetFastFail();
         metaQuerySetResultMode = new MetaQuerySetResultMode(id);
         metaQuerySetResultMode.resetConfiguration(props);
     }
@@ -283,6 +283,7 @@ public class Scenario implements TimeTracker{
      * @return {@code true} if method finished properly.
      */
     public boolean before(){
+        runMonitorsBefore();
         try{
             connection = connectionFactory.getConnection();
             if(pingQuery == null){
@@ -297,6 +298,7 @@ public class Scenario implements TimeTracker{
             LOG.error("Scenario setup failed: " + ex.getMessage(), ex);
             writeExceptionToFile("Summary_scenario_setup_fail.txt", ex);
             Whipper.close(connection);
+            runMonitorsAfter();
             return false;
         }
     }
@@ -339,6 +341,19 @@ public class Scenario implements TimeTracker{
         }
         Whipper.close(connection);
         connection = null;
+        runMonitorsAfter();
+    }
+
+    private void runMonitorsBefore(){
+        for(ProgressMonitor pm : monitors){
+            pm.startingScenario(this);
+        }
+    }
+
+    private void runMonitorsAfter(){
+        for(ProgressMonitor pm : monitors){
+            pm.scenarioFinished(this);
+        }
     }
 
     /**

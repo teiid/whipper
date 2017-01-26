@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -15,8 +16,6 @@ import org.whipper.resultmode.ResultMode;
 
 /**
  * Class which represents single query.
- *
- * @author Juraj Duráni
  */
 public class Query implements TimeTracker{
 
@@ -30,6 +29,7 @@ public class Query implements TimeTracker{
     private final String sql;
     private final ResultMode resultMode;
     private final ActualResultHolder holder = new ActualResultHolder();
+    private final List<ProgressMonitor> monitors = new LinkedList<>();
     private QueryResult result;
     private long startTime = -1;
     private long endTime = -1;
@@ -53,6 +53,14 @@ public class Query implements TimeTracker{
         this.sql = sql;
         this.resultMode = resultMode;
     }
+
+    public void setProgressMonitors(List<ProgressMonitor> monitors){
+        this.monitors.clear();
+        if(monitors != null){
+            this.monitors.addAll(monitors);
+        }
+    }
+
 
     @Override
     public long getStartTime(){
@@ -81,11 +89,16 @@ public class Query implements TimeTracker{
      */
     public void beforeSetFailed(Throwable cause, String type){
         if(cause != null){
-            result = new QueryResult();
-            SQLException ex = new SQLException(type + " failed [" + cause.getMessage() + "]", cause);
-            result.exception = ex;
-            result.pass = false;
-            holder.buildResult(ex);
+            runBeforeMonitors();
+            try{
+                result = new QueryResult();
+                SQLException ex = new SQLException(type + " failed [" + cause.getMessage() + "]", cause);
+                result.exception = ex;
+                result.pass = false;
+                holder.buildResult(ex);
+            } finally {
+                runAfterMoniors();
+            }
         }
     }
 
@@ -93,52 +106,77 @@ public class Query implements TimeTracker{
      * Runs this query.
      */
     public void run(){
-        LOG.info("Running query {} - {}", suite.getId(), id);
-        Statement ps = null;
-        SQLException exception = null;
-        boolean valid = true;
-        startTime = System.currentTimeMillis();
+        runBeforeMonitors();
         try{
-            ps = scenario.getConnection().createStatement();
-            ps.execute(sql);
-        } catch (SQLException ex){
-            exception = ex;
-        }
-        endTime = System.currentTimeMillis();
-        result = new QueryResult();
-        if(exception != null){
-            holder.buildResult(exception);
-            valid = scenario.isConnectionValid();
-        } else {
+            LOG.info("Running query {} - {}", suite.getId(), id);
+            Statement s = null;
+            SQLException exception = null;
+            boolean valid = true;
+            startTime = System.currentTimeMillis();
             try{
-                holder.buildResult(ps);
+                s = scenario.getConnection().createStatement();
+                s.execute(sql);
             } catch (SQLException ex){
-                result.exception = new RuntimeException("Unable to build result: " + ex.toString(), ex);
-                result.pass = false;
-                return;
-            } finally {
-                Whipper.close(ps);
+                exception = ex;
             }
-        }
-        if(exception != null){
-            if(exception.getSQLState().startsWith("08")){
-                result.exception = new ServerNotAvailableException(exception.getMessage(), exception);
-                result.pass = false;
-                return;
-            } else if(!valid){
-                result.exception = new DbNotAvailableException(exception.getMessage(), exception);
-                result.pass = false;
-                return;
+            endTime = System.currentTimeMillis();
+            result = new QueryResult();
+            if(exception != null){
+                holder.buildResult(exception);
+                valid = scenario.isConnectionValid();
             } else {
-                result.exception = exception;
+                try{
+                    holder.buildResult(s);
+                } catch (SQLException | IllegalArgumentException ex){
+                    result.exception = new RuntimeException("Unable to build result: " + ex.toString(), ex);
+                    result.pass = false;
+                    return;
+                } finally {
+                    Whipper.close(s);
+                }
+            }
+            if(exception != null){
+                if(exception.getSQLState().startsWith("08")){
+                    result.exception = new ServerNotAvailableException(exception.getMessage(), exception);
+                    result.pass = false;
+                    return;
+                } else if(!valid){
+                    result.exception = new DbNotAvailableException(exception.getMessage(), exception);
+                    result.pass = false;
+                    return;
+                } else {
+                    result.exception = exception;
+                }
+            }
+            ResultHolder rh = resultMode.handleResult(this);
+            result.pass = !rh.isFail();
+            if(rh.isException()){
+                result.exception = rh.getException();
+            } else if(rh.isError()){
+                result.errors = rh.getErrors();
+            }
+        } finally {
+            runAfterMoniors();
+        }
+    }
+
+    private void runBeforeMonitors(){
+        for(ProgressMonitor pm : monitors){
+            if(querySet.isMeta()){
+                pm.startingMetaQuery(this);
+            } else {
+                pm.startingQuery(this);
             }
         }
-        ResultHolder rh = resultMode.handleResult(this);
-        result.pass = !rh.isFail();
-        if(rh.isException()){
-            result.exception = rh.getException();
-        } else if(rh.isError()){
-            result.errors = rh.getErrors();
+    }
+
+    private void runAfterMoniors(){
+        for(ProgressMonitor pm : monitors){
+            if(querySet.isMeta()){
+                pm.metaQueryFinished(this);
+            } else {
+                pm.queryFinished(this);
+            }
         }
     }
 
@@ -219,10 +257,9 @@ public class Query implements TimeTracker{
         return id + " - " + sql;
     }
 
+
     /**
      * Class which represents result of the query.
-     *
-     * @author Juraj Duráni
      */
     public class QueryResult {
 
@@ -236,17 +273,21 @@ public class Query implements TimeTracker{
                     .append(',')
                     .append(pass ? "pass" : "fail")
                     .append(',')
-                    .append(TIME_FORMAT.format(new java.util.Date(startTime)))
+                    .append(formatTime(startTime))
                     .append(',')
-                    .append(TIME_FORMAT.format(new java.util.Date(endTime)))
+                    .append(formatTime(endTime))
                     .append(',')
-                    .append(Long.toString(endTime - startTime));
+                    .append(Long.toString(getDuration()));
             if(isException()){
                 sb.append(',').append(exception.toString());
             } else if(isError()){
                 sb.append(',').append(errors.get(0));
             }
             return sb.toString();
+        }
+
+        private String formatTime(long time){
+            return time < 0 ? "-1" : TIME_FORMAT.format(new java.util.Date(time));
         }
 
         /**

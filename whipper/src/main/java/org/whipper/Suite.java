@@ -29,6 +29,7 @@ public class Suite implements Comparable<Suite>, TimeTracker{
     private static final Logger LOG = LoggerFactory.getLogger(Suite.class);
 
     private final List<QuerySet> querySets = new LinkedList<>();
+    private final List<ProgressMonitor> monitors = new LinkedList<>();
     private final String id;
     private long startTime = -1;
     private long endTime = -1;
@@ -45,6 +46,21 @@ public class Suite implements Comparable<Suite>, TimeTracker{
     public Suite(String id) {
         this.id = id;
     }
+
+    public void setProgressMonitors(List<ProgressMonitor> monitors){
+        this.monitors.clear();
+        if(monitors != null){
+            this.monitors.addAll(monitors);
+        }
+        for(QuerySet qs : querySets){
+            qs.setProgressMonitors(monitors);
+        }
+        if(beforeSuite != null){ beforeSuite.setProgressMonitors(monitors); }
+        if(afterSuite != null){ afterSuite.setProgressMonitors(monitors); }
+        if(beforeEach != null){ beforeEach.setProgressMonitors(monitors); }
+        if(afterEach != null){ afterEach.setProgressMonitors(monitors); }
+    }
+
 
     @Override
     public long getStartTime(){
@@ -196,6 +212,9 @@ public class Suite implements Comparable<Suite>, TimeTracker{
      */
     public void run(long maxEndTime) throws ServerNotAvailableException, DbNotAvailableException,
                 MaxTimeExceededException, ExecutionInterruptedException{
+        for(ProgressMonitor pm : monitors){
+            pm.startingSuite(this);
+        }
         LOG.info("Starting suite {}.", id);
         startTime = System.currentTimeMillis();
         try{
@@ -229,6 +248,9 @@ public class Suite implements Comparable<Suite>, TimeTracker{
         } finally {
             endTime = System.currentTimeMillis();
             LOG.info("Suite {} finished.", id);
+            for(ProgressMonitor pm : monitors){
+                pm.suiteFinished(this);
+            }
         }
     }
 

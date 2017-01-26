@@ -1,9 +1,9 @@
 package org.whipper.resultmode;
 
 import java.io.File;
-import java.util.Properties;
 
 import org.whipper.Query;
+import org.whipper.WhipperProperties;
 
 /**
  * The class which implements this interface should be responsible for handling result of the query.
@@ -17,7 +17,7 @@ public interface ResultMode {
      *
      * @param props test properties
      */
-    void resetConfiguration(Properties props);
+    void resetConfiguration(WhipperProperties props);
 
     /**
      * Handles query result.

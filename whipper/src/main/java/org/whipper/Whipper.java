@@ -4,18 +4,15 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.ServiceLoader;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -34,37 +31,6 @@ import org.whipper.xml.XmlHelper;
 public class Whipper {
 
     private static final Logger LOG = LoggerFactory.getLogger(Whipper.class);
-    private static final Pattern PH_PATTERN = Pattern.compile(".*\\$\\{.+\\}.*");
-
-    /**
-     * Keys of properties.
-     *
-     * @author Juraj Duráni
-     */
-    public static interface Keys{
-        public static final String CONNECTION_PROPERTY_PREFIX = "whipper.connection.property.";
-
-        public static final String CONNECTION_STRATEGY = "whipper.connection.strategy";
-        public static final String TIME_FOR_ONE_QUERY = "whipper.scenario.time.for.one.query";
-        public static final String PING_QUERY = "whipper.scenario.ping.query";
-        public static final String URL = "url";
-        public static final String DRIVER_CLASS = "jdbc.driver";
-        public static final String SCENARIO = "scenario.file";
-        public static final String INCLUDE_SCENARIOS = "whipper.scenario.include";
-        public static final String EXCLUDE_SCENARIOS = "whipper.scenario.exclude";
-        public static final String INCLUDE_SUITES = "whipper.suite.include";
-        public static final String EXCLUDE_SUITES = "whipper.suite.exclude";
-        public static final String ARTIFACTS_DIR = "queryset.artifacts.dir";
-        public static final String OUTPUT_DIR = "output.dir";
-        public static final String RESULT_MODE = "result.mode";
-        public static final String ALLOWED_DIVERGENCE = "allowed.divergence";
-        public static final String QUERYSET_DIR = "queryset.dirname";
-        public static final String EXPECTED_RESULTS_DIR = "expected.results.dirname";
-        public static final String TEST_QUERIES_DIR = "test.queries.dirname";
-        public static final String VALID_CONNECTION_SQL = "whipper.scenario.valid.connection.sql";
-        public static final String AFTER_QUERY = "whipper.scenario.after.query";
-        public static final String QUERY_SET_FAST_FAIL = "whipper.scenario.fastfail";
-    }
 
     /**
      * Main method to allow to run Whipper tool from command line.
@@ -94,7 +60,7 @@ public class Whipper {
             }
         }
         try{
-            new Whipper().runTest(f, p);
+            new Whipper(new WhipperProperties(f, p)).start();
         } catch (Throwable t){
             LOG.warn("Exception thrown: " + t.getMessage(), t);
         }
@@ -117,66 +83,99 @@ public class Whipper {
         }
     }
 
+    private final WhipperProperties properties;
+    private final List<ProgressMonitor> monitors = new LinkedList<>();
     private ResultMode resultMode;
+    private Thread executionThread;
+    private WhipperResult result;
 
-    /**
-     * Runs test.
-     *
-     * @param propsFile file with properties.
-     */
-    public void runTest(File propsFile){
-        runTest(propsFile, null);
+    public Whipper(WhipperProperties properties){
+        this.properties = properties;
     }
 
-    /**
-     * Runs test.
-     *
-     * @param propsFile file with properties
-     * @param over {@code Properties} to override properties from {@code propsFile}
-     */
-    public void runTest(File propsFile, Properties over){
-        final Properties props = new Properties();
-        if(propsFile == null){
-            LOG.info("Properties file is null. Ignoring it.");
-        } else if(!propsFile.exists()){
-            LOG.warn("Properties file does not exist [{}]. Ignoring it.", propsFile);
-        } else if(!propsFile.isFile()){
-            LOG.warn("Properties file is not a file [{}]. Ignoring it.", propsFile);
+    public void start(){
+        start(false);
+    }
+
+    public void start(boolean inNewThread){
+        if(inNewThread){
+            executionThread = new Thread(new Runnable(){
+                @Override
+                public void run(){
+                    try{
+                        runTest();
+                    } finally {
+                        executionThread = null;
+                    }
+                }
+            });
+            executionThread.start();
         } else {
-            FileReader fr = null;
+            executionThread = Thread.currentThread();
             try{
-                fr = new FileReader(propsFile);
-                props.load(fr);
-            } catch (IOException ex){
-                LOG.error("Cannot load properties from file " + propsFile + ". Ignoring it.", ex);
-                props.clear();
+                runTest();
             } finally {
-                Whipper.close(fr);
+                executionThread = null;
             }
         }
-        if(over != null && !over.isEmpty()){
-            props.putAll(over);
+    }
+
+    public void stop(){
+        if(executionThread != null){
+            // potentially dangerous - not synchronized
+            executionThread.interrupt();
         }
-        runTest(props);
+    }
+
+    public WhipperResult getResult(){
+        return result;
+    }
+
+    public void waitFor() throws InterruptedException{
+        if(executionThread != null){
+            // potentially dangerous - not synchronized
+            executionThread.join();
+        }
+    }
+
+    public void registerProgressMonitor(ProgressMonitor monitor) throws IllegalStateException{
+        if(executionThread != null){
+            throw new IllegalStateException("Cannot register monitor. Whipper is already running.");
+        }
+        if(monitor != null){
+            monitors.add(monitor);
+        }
+    }
+
+    public void unregisterProgressMonitor(ProgressMonitor monitor) throws IllegalStateException{
+        if(executionThread != null){
+            throw new IllegalStateException("Cannot unregister monitor. Whipper is already running.");
+        }
+        if(monitor != null){
+            monitors.remove(monitor);
+        }
     }
 
     /**
      * Runs test.
-     *
-     * @param props test properties
      */
-    public void runTest(Properties props){
-        resultMode = getResultMode(props);
-        List<TestResultsWriter> trws = getResultWriters(resolvePlaceHolders(props));
-        ScenarioIterator iter = new ScenarioIterator(props);
+    private void runTest(){
+        result = null;
+        WhipperResult tmpRes = new WhipperResult();
+        properties.resolvePlaceholders();
+        resultMode = getResultMode(properties);
+        List<TestResultsWriter> trws = getResultWriters(properties);
+        ScenarioIterator iter = new ScenarioIterator(properties, resultMode);
+        for(ProgressMonitor pm : monitors){
+            pm.starting(iter.getScenarioNames());
+        }
         try{
             while(iter.hasNext()){
                 Scenario scen = iter.next();
                 if(scen == null){
                     continue;
                 }
-                Properties init = iter.getScenarioInitProperties();
-                resultMode.resetConfiguration(init);
+                resultMode.resetConfiguration(iter.initProps);
                 if(scen.before()){
                     try{
                         scen.run();
@@ -191,12 +190,17 @@ public class Whipper {
                 } else {
                     LOG.warn("Skipping scenario {}.", scen.getId());
                 }
+                tmpRes.collectStats(scen);
                 for(TestResultsWriter trw : trws){
                     trw.writeResultOfScenario(scen);
                 }
             }
         } finally {
+            result = tmpRes;
             resultMode.destroy();
+            for(ProgressMonitor pm : monitors){
+                pm.finished(result);
+            }
         }
     }
 
@@ -206,7 +210,7 @@ public class Whipper {
      * @param init properties to use to initialize writer
      * @return list of {@link TestResultsWriter}s
      */
-    private List<TestResultsWriter> getResultWriters(Properties init){
+    private List<TestResultsWriter> getResultWriters(WhipperProperties init){
         List<TestResultsWriter> out = new ArrayList<>();
         for(Iterator<TestResultsWriter> iter = ServiceLoader.load(TestResultsWriter.class).iterator(); iter.hasNext();){
             TestResultsWriter trw = iter.next();
@@ -225,8 +229,8 @@ public class Whipper {
      * @param props test properties
      * @return implementation of {@link ResultMode}
      */
-    private ResultMode getResultMode(Properties props){
-        String modeName = props.getProperty(Keys.RESULT_MODE);
+    private ResultMode getResultMode(WhipperProperties props){
+        String modeName = props.getResultMode();
         if(modeName == null){
             LOG.warn("No ResultMode set. Setting to 'NONE'.");
             modeName = "NONE";
@@ -245,52 +249,49 @@ public class Whipper {
      *
      * @author Juraj Duráni
      */
-    private class ScenarioIterator implements Iterator<Scenario>{
+    private static class ScenarioIterator implements Iterator<Scenario>{
 
         private final File[] scenarios;
-        private final File artefactsDir;
-        private final Properties original = new Properties();
-        private final Properties initProps = new Properties();
+        private final File artifactsDir;
+        private final WhipperProperties original;
+        private final WhipperProperties initProps = new WhipperProperties();
+        private final ResultMode rm;
         private int idx = 0;
 
-        private ScenarioIterator(final Properties props) {
-            original.putAll(props);
-            String scen = original.getProperty(Keys.SCENARIO);
-            File scenFile = new File(scen == null ? "" : scen);
-            if(scen == null || !scenFile.exists()){
+        private ScenarioIterator(final WhipperProperties props, ResultMode rm) {
+            this.rm = rm;
+            original = props.copy();
+            File scen = original.getScenario();
+            if(scen == null || !scen.exists()){
                 scenarios = new File[0];
+            } else if(scen.isFile()){
+                scenarios = new File[]{scen};
             } else {
-                if(scenFile.isFile()){
-                    scenarios = new File[]{scenFile};
-                } else {
-                    String inclPat = original.getProperty(Keys.INCLUDE_SCENARIOS);
-                    String exclPat = original.getProperty(Keys.EXCLUDE_SCENARIOS);
-                    final Pattern incl = inclPat == null ? null : Pattern.compile("^(" + inclPat + ")$");
-                    final Pattern excl = exclPat == null ? null : Pattern.compile("^(" + exclPat + ")$");
-                    scenarios = scenFile.listFiles(new FileFilter() {
+                final Pattern incl = original.getIncludeScenario();
+                final Pattern excl = original.getExcludeScenario();
+                scenarios = scen.listFiles(new FileFilter() {
 
-                        @Override
-                        public boolean accept(File pathname) {
-                            String name = pathname.getName().trim();
-                            String nameNoExt = removeExtension(name);
-                            boolean accept = pathname.isFile() && name.endsWith(".properties");
-                            if(accept && incl != null){
-                                accept = incl.matcher(nameNoExt).matches();
-                            }
-                            if(accept && excl != null){
-                                accept = !excl.matcher(nameNoExt).matches();
-                            }
-                            return accept;
+                    @Override
+                    public boolean accept(File pathname) {
+                        String name = pathname.getName().trim();
+                        String nameNoExt = removeExtension(name);
+                        boolean accept = pathname.isFile() && name.endsWith(".properties");
+                        if(accept && incl != null){
+                            accept = incl.matcher(nameNoExt).matches();
                         }
-                    });
-                }
+                        if(accept && excl != null){
+                            accept = !excl.matcher(nameNoExt).matches();
+                        }
+                        return accept;
+                    }
+                });
             }
-            String artefactsDirStr = original.getProperty(Keys.ARTIFACTS_DIR);
-            if(artefactsDirStr == null){
-                LOG.error("Property {} is not set.", Keys.ARTIFACTS_DIR);
-                artefactsDir = new File("");
+            File f = original.getArtifacstDir();
+            if(f == null){
+                LOG.warn("Artifacts directory is not set.");
+                artifactsDir = new File("");
             } else {
-                artefactsDir = new File(artefactsDirStr);
+                artifactsDir = f;
             }
             if(scenarios.length == 0){
                 LOG.warn("No scenarios to run [{}].", scen);
@@ -311,6 +312,14 @@ public class Whipper {
                     }
                 });
             }
+        }
+
+        private List<String> getScenarioNames(){
+            List<String> out = new ArrayList<>(scenarios.length);
+            for(File f : scenarios){
+                out.add(removeExtension(f.getName()));
+            }
+            return out;
         }
 
         @Override
@@ -334,18 +343,27 @@ public class Whipper {
          */
         private Scenario createScenario(File scenFile){
             try(FileReader fr = new FileReader(scenFile)){
-                Properties props = new Properties();
-                props.putAll(original);
-                props.load(fr);
+                WhipperProperties props = original.copy();
+                Properties scenProps = new Properties();
+                scenProps.load(fr);
+                props.addAll(scenProps);
                 LOG.debug("Properties: {}.", props);
-                props = resolvePlaceHolders(props);
+                props.resolvePlaceholders();
                 LOG.debug("Resolved properties: {}.", props);
                 Scenario scen = new Scenario(removeExtension(scenFile.getName()));
                 scen.init(props);
-                initProps.clear();
-                initProps.putAll(props);
-                File testQueries = new File(artefactsDir,
-                        props.getProperty(Keys.QUERYSET_DIR)+ File.separator + props.getProperty(Keys.TEST_QUERIES_DIR));
+                initProps.copyFrom(props);
+                String qsd = props.getQuerySetDir();
+                String tqd = props.getTestQueriesDir();
+                if(qsd == null){
+                    LOG.warn("Query set directory is not defined. Setting to empty string.");
+                    qsd = "";
+                }
+                if(tqd == null){
+                    LOG.warn("Test queries directory is not defined. Setting to empty string.");
+                    tqd = "";
+                }
+                File testQueries = new File(artifactsDir, qsd + File.separator + tqd);
                 File[] suites = testQueries.listFiles(new FilenameFilter() {
                     @Override
                     public boolean accept(File dir, String name) {
@@ -355,15 +373,21 @@ public class Whipper {
                 if(suites == null){
                     throw new IllegalArgumentException("Cannot load test queries from directory " + testQueries);
                 }
-                Pattern includePattern = Pattern.compile(props.getProperty(Keys.INCLUDE_SUITES, ".*"));
-                Pattern excludePattern = Pattern.compile(props.getProperty(Keys.EXCLUDE_SUITES, ""));
+                Pattern includePattern = props.getIncludeSuite();
+                Pattern excludePattern = props.getExcludeSuite();
+                if(includePattern == null){
+                    includePattern = Pattern.compile(".*");
+                }
+                if(excludePattern == null){
+                    excludePattern = Pattern.compile("");
+                }
                 LOG.debug("suite include pattern: {}", includePattern);
                 LOG.debug("suite exclude pattern: {}", excludePattern);
                 for(File f : suites){
                     String suiteName = removeExtension(f.getName());
                     if(includePattern.matcher(suiteName).matches() && ! excludePattern.matcher(suiteName).matches()){
                         Suite suite = new Suite(suiteName);
-                        XmlHelper.loadQueries(f, scen, suite, resultMode);
+                        XmlHelper.loadQueries(f, scen, suite, rm);
                         scen.addSuite(suite);
                     }else{
                         LOG.info("Skipping suite {}", suiteName);
@@ -381,83 +405,6 @@ public class Whipper {
         public void remove() {
             throw new UnsupportedOperationException("Not supported");
         }
-
-        private Properties getScenarioInitProperties(){
-            return initProps;
-        }
-    }
-
-    /**
-     * Resolves placeholders in properties.
-     * <p>
-     * Placeholders are declared as ${...}.
-     * If some key is not present in passed properties, placeholder remains unchanged.
-     *
-     * @param props properties
-     * @return resolved properties (new instance of {@link Properties})
-     */
-    static Properties resolvePlaceHolders(Properties props) {
-        Properties resolved = new Properties();
-        resolved.putAll(props);
-
-        boolean changed = true;
-        while(changed){
-            changed = false;
-            for(Entry<Object, Object> e : resolved.entrySet()){
-                String value = e.getValue().toString();
-                if(containsPlaceHolder(value)){
-                    Set<String> phs = getPlaceHolders(value);
-                    if(phs.contains(e.getKey().toString())){ // contains itself
-                        throw new IllegalArgumentException("Recurcive placeholders: " + props);
-                    }
-                    for(String ph : phs){
-                        Object toReplace = resolved.get(ph);
-                        if(toReplace != null){
-                            String replacement = toReplace.toString();
-                            if(LOG.isTraceEnabled()){
-                                LOG.trace("Replacing '{}' with '{}'.", ph, replacement);
-                            }
-                            e.setValue(value.replace("${" + ph + "}", replacement.toString()));
-                            changed = true;
-                        }
-                    }
-                }
-            }
-        }
-        return resolved;
-    }
-
-    /**
-     * Returns all placeholders in string.
-     * 
-     * @param str input string
-     * @return placeholder keys
-     */
-    static Set<String> getPlaceHolders(String str){
-        Set<String> phs = new HashSet<>();
-        int start = -2;
-        int end;
-        boolean next = true;
-        while(next){
-            start = str.indexOf("${", start + 2);
-            end = str.indexOf("}", start + 2);
-            if(start == -1 || end == -1){
-                next = false;
-            } else if((end - start) != 2){
-                phs.add(str.substring(start + 2, end));
-            }
-        }
-        return phs;
-    }
-
-    /**
-     * Returns true if string contains placeholder.
-     *
-     * @param str input string
-     * @return true if {@code str} contains at least one placeholder
-     */
-    static boolean containsPlaceHolder(String str){
-        return PH_PATTERN.matcher(str).matches();
     }
 
     /**

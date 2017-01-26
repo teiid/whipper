@@ -1,7 +1,8 @@
 package org.whipper.connection;
 
 import java.sql.Connection;
-import java.util.Properties;
+
+import org.whipper.WhipperProperties;
 
 /**
  * Interface for providing connections to the databse.
@@ -15,7 +16,7 @@ public interface ConnectionFactory {
      *
      * @param props test properties
      */
-    void init(Properties props);
+    void init(WhipperProperties props);
 
     /**
      * Returns connection to the database.

@@ -13,19 +13,47 @@
         <web.app.base.name>whipper-web-ui</web.app.base.name>
         <javaxee.we.api.version>7.0</javaxee.we.api.version>
         <swagger.version>1.5.9</swagger.version>
+        <json.simple.version>1.1.1</json.simple.version>
         <swagger.plugin.version>3.1.2</swagger.plugin.version>
-        <wildfly.swarm.plugin.version>2016.12.1</wildfly.swarm.plugin.version>
         <maven.war.plugin.version>2.6</maven.war.plugin.version>
     </properties>
     <profiles>
         <profile>
             <id>swarm</id>
+            <properties>
+                <wildfly.swarm.version>2016.12.1</wildfly.swarm.version>
+            </properties>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.wildfly.swarm</groupId>
+                        <artifactId>bom</artifactId>
+                        <version>${wildfly.swarm.version}</version>
+                        <type>pom</type>
+                        <scope>import</scope>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+            <dependencies>
+                <dependency>
+                    <groupId>org.wildfly.swarm</groupId>
+                    <artifactId>jaxrs</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.wildfly.swarm</groupId>
+                    <artifactId>ejb</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.wildfly.swarm</groupId>
+                    <artifactId>cdi</artifactId>
+                </dependency>
+            </dependencies>
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.wildfly.swarm</groupId>
                         <artifactId>wildfly-swarm-plugin</artifactId>
-                        <version>${wildfly.swarm.plugin.version}</version>
+                        <version>${wildfly.swarm.version}</version>
                         <configuration>
                             <properties>
                                 <swarm.context.path>${web.app.base.name}</swarm.context.path>
@@ -63,6 +91,17 @@
             <version>${javaxee.we.api.version}</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-core</artifactId>
+            <version>${swagger.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.json-simple</groupId>
+            <artifactId>json-simple</artifactId>
+            <version>${json.simple.version}</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -87,7 +126,7 @@
                             <springmvc>false</springmvc>
                             <locations>org.whipper.gui.web</locations>
                             <schemes>http</schemes>
-                            <basePath>/${web.app.base.name}/whipper-ui</basePath>
+                            <basePath>/${web.app.base.name}/whipper-rest</basePath>
                             <info>
                                 <title>Whipper REST API</title>
                                 <version>${project.version}</version>

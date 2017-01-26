@@ -3,14 +3,13 @@ package org.whipper.resultmode;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.whipper.ExpectedResultHolder;
 import org.whipper.Query;
 import org.whipper.QuerySet;
-import org.whipper.Whipper.Keys;
+import org.whipper.WhipperProperties;
 import org.whipper.xml.XmlHelper;
 import org.whipper.xml.result.ObjectFactory;
 import org.whipper.xml.result.QueryResultType;
@@ -35,8 +34,8 @@ public class MetaQuerySetResultMode implements ResultMode{
     }
 
     @Override
-    public void resetConfiguration(Properties props){
-        outputDir = new File(props.getProperty(Keys.OUTPUT_DIR), scenario);
+    public void resetConfiguration(WhipperProperties props){
+        outputDir = new File(props.getOutputDir(), scenario);
     }
 
     @Override

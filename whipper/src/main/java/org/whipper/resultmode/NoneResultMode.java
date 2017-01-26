@@ -1,9 +1,9 @@
 package org.whipper.resultmode;
 
 import java.io.File;
-import java.util.Properties;
 
 import org.whipper.Query;
+import org.whipper.WhipperProperties;
 
 /**
  * This is a none result mode. It will do nothing with the result.
@@ -21,7 +21,7 @@ public class NoneResultMode implements ResultMode {
     public void destroy() {}
 
     @Override
-    public void resetConfiguration(Properties props) {}
+    public void resetConfiguration(WhipperProperties props) {}
 
     @Override
     public File getErrorFile(Query q){

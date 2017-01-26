@@ -4,14 +4,11 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.whipper.ExpectedResultHolder;
 import org.whipper.Query;
 import org.whipper.Whipper;
-import org.whipper.Whipper.Keys;
+import org.whipper.WhipperProperties;
 import org.whipper.xml.XmlHelper;
 
 /**
@@ -21,29 +18,18 @@ import org.whipper.xml.XmlHelper;
  */
 public class CompareResultMode implements ResultMode {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CompareResultMode.class);
-
     private File outputDirectory;
     private BigDecimal allowedDivergence;
     private final ExpectedResultHolder holder = new ExpectedResultHolder();
 
     @Override
-    public void resetConfiguration(Properties props) {
-        String outDirStr = props.getProperty(Keys.OUTPUT_DIR);
-        if(outDirStr == null){
-            throw new IllegalArgumentException("Output directory is not set (property " + Keys.OUTPUT_DIR + ")");
+    public void resetConfiguration(WhipperProperties props) {
+        outputDirectory = props.getOutputDir();
+        if(outputDirectory == null){
+            throw new IllegalArgumentException("Output directory is not defined.");
         }
-        outputDirectory = new File(outDirStr);
-        String adStr = props.getProperty(Keys.ALLOWED_DIVERGENCE);
-        BigDecimal ad = BigDecimal.ZERO;
-        if(adStr != null && !adStr.isEmpty()){
-            try{
-                ad = new BigDecimal(adStr);
-            } catch (NumberFormatException ex){
-                LOG.warn("Unable to parse allowed divergence. Setting to zero.", ex);
-            }
-        }
-        allowedDivergence = ad;
+        BigDecimal ad = props.getAllowedDivergence();
+        allowedDivergence = ad == null ? BigDecimal.ZERO : ad;
     }
 
     @Override

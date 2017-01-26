@@ -2,10 +2,9 @@ package org.whipper.resultmode;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Properties;
 
 import org.whipper.Query;
-import org.whipper.Whipper.Keys;
+import org.whipper.WhipperProperties;
 import org.whipper.xml.XmlHelper;
 
 /**
@@ -21,12 +20,11 @@ public class GenerateResultMode implements ResultMode {
     public void destroy() {}
 
     @Override
-    public void resetConfiguration(Properties props) {
-        String outDirStr = props.getProperty(Keys.OUTPUT_DIR);
-        if(outDirStr == null){
-            throw new IllegalArgumentException("Output directory is not set (property " + Keys.OUTPUT_DIR + ")");
+    public void resetConfiguration(WhipperProperties props) {
+        rootOutputDir = props.getOutputDir();
+        if(rootOutputDir == null){
+            throw new IllegalArgumentException("Output directory is not defined.");
         }
-        rootOutputDir = new File(outDirStr);
     }
 
     @Override

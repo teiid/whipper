@@ -1,8 +1,7 @@
 package org.whipper.results;
 
-import java.util.Properties;
-
 import org.whipper.Scenario;
+import org.whipper.WhipperProperties;
 
 /**
  * Interface for writing results of the scenarios.
@@ -19,7 +18,7 @@ public interface TestResultsWriter{
      *      and writer can be used for writing results, {@code false}
      *      otherwise
      */
-    boolean init(Properties props);
+    boolean init(WhipperProperties props);
 
     /**
      * Destroys this writer. Method is suppose to end this
