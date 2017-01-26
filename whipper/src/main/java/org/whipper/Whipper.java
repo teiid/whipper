@@ -52,6 +52,8 @@ public class Whipper {
         public static final String SCENARIO = "scenario.file";
         public static final String INCLUDE_SCENARIOS = "whipper.scenario.include";
         public static final String EXCLUDE_SCENARIOS = "whipper.scenario.exclude";
+        public static final String INCLUDE_SUITES = "whipper.suite.include";
+        public static final String EXCLUDE_SUITES = "whipper.suite.exclude";
         public static final String ARTIFACTS_DIR = "queryset.artifacts.dir";
         public static final String OUTPUT_DIR = "output.dir";
         public static final String RESULT_MODE = "result.mode";
@@ -353,10 +355,19 @@ public class Whipper {
                 if(suites == null){
                     throw new IllegalArgumentException("Cannot load test queries from directory " + testQueries);
                 }
+                Pattern includePattern = Pattern.compile(props.getProperty(Keys.INCLUDE_SUITES, ".*"));
+                Pattern excludePattern = Pattern.compile(props.getProperty(Keys.EXCLUDE_SUITES, ""));
+                LOG.debug("suite include pattern: {}", includePattern);
+                LOG.debug("suite exclude pattern: {}", excludePattern);
                 for(File f : suites){
-                    Suite suite = new Suite(removeExtension(f.getName()));
-                    XmlHelper.loadQueries(f, scen, suite, resultMode);
-                    scen.addSuite(suite);
+                    String suiteName = removeExtension(f.getName());
+                    if(includePattern.matcher(suiteName).matches() && ! excludePattern.matcher(suiteName).matches()){
+                        Suite suite = new Suite(suiteName);
+                        XmlHelper.loadQueries(f, scen, suite, resultMode);
+                        scen.addSuite(suite);
+                    }else{
+                        LOG.info("Skipping suite {}", suiteName);
+                    }
                 }
                 return scen;
             } catch (Exception ex){
