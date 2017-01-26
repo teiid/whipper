@@ -24,7 +24,12 @@ public class ExpectedResultHolderTest{
     public void equalsNoActResTest(){
         ExpectedResultHolder exp = new ExpectedResultHolder();
         exp.setUpdateCount(0);
-        Assert.assertFalse("Expected result is none of update, exception, table.", exp.equals(getMock(), false, null));
+        Assert.assertFalse("Actual result is none of update, exception, table.", exp.equals(getMock(), false, null));
+    }
+
+    @Test
+    public void equalsNoResTest(){
+        Assert.assertTrue("Actual and expected result are no-result.", new ExpectedResultHolder().equals(getMock(), false, null));
     }
 
     @Test
@@ -109,6 +114,7 @@ public class ExpectedResultHolderTest{
 
     private ActualResultHolder getMock(){
         ActualResultHolder arh = Mockito.mock(ActualResultHolder.class);
+        Mockito.doCallRealMethod().when(arh).isNoResult();
         Mockito.doReturn(-1).when(arh).getUpdateCount();
         return arh;
     }

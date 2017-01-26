@@ -157,6 +157,15 @@ public class ExpectedResultHolder {
     }
 
     /**
+     * Decides, whether this holder does not represent any result.
+     *
+     * @return {@code true} if this holder represents none of update, result, exception
+     */
+    public boolean isNoResult(){
+        return !isException() && !isResult() && !isUpdate();
+    }
+
+    /**
      * Returns XMl representation of original result.
      *
      * @return original result
@@ -175,18 +184,26 @@ public class ExpectedResultHolder {
      */
     public boolean equals(ActualResultHolder holder, boolean couldSort, BigDecimal allowedDivergence){
         errors.clear();
-        if(!holder.isException() && !holder.isUpdate() && !holder.isResult()){
-            addError("Actual result is none of result, update, exception.");
-        } else if(isException()){
+        if(isException()){
             equalsException(holder);
         } else if(isUpdate()){
             equalsUpdate(holder);
         } else if(isResult()){
             equalsTable(holder, couldSort, allowedDivergence);
         } else {
-            addError("Expected result is none of result, update, exception.");
+            equalsNoResult(holder);
         }
         return errors.isEmpty();
+    }
+
+    private void equalsNoResult(ActualResultHolder holder){
+        if(holder.isException()){
+            addError("Expected no-result but found exception.");
+        } else if(holder.isResult()){
+            addError("Expected no-result but found result.");
+        } else if(holder.isUpdate()){
+            addError("Expected no-result but found update.");
+        }
     }
 
     /**
@@ -201,6 +218,8 @@ public class ExpectedResultHolder {
             addError("Expected table but found update.");
         } else if(holder.isException()){
             addError("Expected table but found exception[" + holder.getOriginalExceptionClass() + "].");
+        } else if(holder.isNoResult()){
+            addError("Expected table but found no-result.");
         } else {
             if(columnLabels.size() != holder.getColumnLabels().size()){
                 addError("Expected and actual column count are different. Expected: ["
@@ -246,7 +265,9 @@ public class ExpectedResultHolder {
             addError("Expected update but found table.");
         } else if (handler.isException()){
             addError("Expected update but found exception[" + handler.getOriginalExceptionClass().getName() + "].");
-        } else if (handler.isUpdate()){
+        } else if(handler.isNoResult()){
+            addError("Expected update but found no-result.");
+        } else {
             if (updateCount != handler.getUpdateCount()) {
                 addError("Expected and actual update count are different. Expected: [" + updateCount + "], actual: ["
                         + handler.getUpdateCount() + "].");
@@ -264,6 +285,8 @@ public class ExpectedResultHolder {
             addError("Expected exception [" + exceptionClass + "] but found table.");
         } else if(handler.isUpdate()){
             addError("Expected exception [" + exceptionClass + "] but found update.");
+        } else if(handler.isNoResult()){
+            addError("Expected exception but found no-result.");
         } else {
             if(!exceptionClass.equals(handler.getOriginalExceptionClass().getName())){
                 addError("Expected and actual exception class are different. Expected: [" + exceptionClass + "], actual: [" + handler.getOriginalExceptionClass().getName() + "].");

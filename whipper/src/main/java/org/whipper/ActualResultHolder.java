@@ -58,6 +58,15 @@ public class ActualResultHolder {
     }
 
     /**
+     * Decides, whether this holder does not represent any result.
+     *
+     * @return {@code true} if this holder represents none of update, result, exception
+     */
+    public boolean isNoResult(){
+        return !isException() && !isResult() && !isUpdate();
+    }
+
+    /**
      * Returns original exception thrown by query.
      *
      * @return original exception or {@code null} if this holder does not represent an exception

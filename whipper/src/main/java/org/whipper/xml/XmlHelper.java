@@ -235,6 +235,8 @@ public class XmlHelper {
                 ehr.setColumnLabels(labels);
                 ehr.setColumnTypeNames(types);
                 ehr.setRows(rows);
+            } else if (qr.getNoResult() != null){
+                // OK, 'no-result' in the XML file
             } else {
                 throw new WhipperException("Unknown result file format.");
             }

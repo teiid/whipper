@@ -238,6 +238,21 @@ public class ActualResultHolderTest {
         Assert.assertNull("Root cause exception message.", holder.getRootCauseExceptionMessage());
     }
 
+    @Test
+    public void buildNoResult() throws SQLException{
+        int updCount = -1;
+        Statement s = Mockito.mock(Statement.class);
+        Mockito.doReturn(Boolean.FALSE).when(s).isClosed();
+        Mockito.doReturn(null).when(s).getResultSet();
+        Mockito.doReturn(updCount).when(s).getUpdateCount();
+
+        holder.buildResult(s);
+        Assert.assertFalse("Is exception.", holder.isException());
+        Assert.assertFalse("Is result.", holder.isResult());
+        Assert.assertFalse("Is update.", holder.isUpdate());
+        Assert.assertTrue("Is no-result.", holder.isNoResult());
+    }
+
     private class IntGtMaxLe0 extends BaseMatcher<Integer> {
         private int max;
         private IntGtMaxLe0(int max) {
