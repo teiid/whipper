@@ -7,6 +7,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.whipper.xml.XmlHelper;
 import org.whipper.xml.result.QueryResultType;
@@ -272,7 +273,7 @@ public class ExpectedResultHolder {
                         addError("Expected and actual message are different. Expected: [" + exceptionMessage + "], actual: [" + handler.getRootCauseExceptionMessage() + "].");
                     }
                 }
-                if(exceptionRegex != null && !handler.getRootCauseExceptionMessage().matches(exceptionRegex)){
+                if(exceptionRegex != null && !Pattern.compile(exceptionRegex, Pattern.DOTALL).matcher(handler.getRootCauseExceptionMessage()).matches()){
                     addError("Message does not match pattern. Message: [" + handler.getRootCauseExceptionMessage() + "], pattern: [" + exceptionRegex + "].");
                 }
             }
