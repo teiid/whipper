@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
-    <xs:include schemaLocation="result.xsd"/>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="xml.whipper.org/error"
+           xmlns:e="xml.whipper.org/error"
+           xmlns:r="xml.whipper.org/result"
+           elementFormDefault="qualified">
+    <xs:import namespace="xml.whipper.org/result" schemaLocation="result.xsd"/>
     <xs:element name="query-error">
         <xs:complexType>
             <xs:sequence>
@@ -12,8 +16,8 @@
                         </xs:sequence>
                     </xs:complexType>
                 </xs:element>
-                <xs:element name="actual-result" type="queryResultType"/>
-                <xs:element name="expected-result" type="queryResultType"/>
+                <xs:element name="actual-result" type="r:queryResultType"/>
+                <xs:element name="expected-result" type="r:queryResultType"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>

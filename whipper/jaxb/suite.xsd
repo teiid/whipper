@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="xml.whipper.org/suite"
+           xmlns:s="xml.whipper.org/suite"
+           elementFormDefault="qualified">
     <xs:element name="query-suite">
         <xs:complexType>
             <xs:sequence>
-                <xs:element name="queries" type="queries"/>
-                <xs:element name="meta-queries" type="metaQueries" minOccurs="0"/>
+                <xs:element name="queries" type="s:queries"/>
+                <xs:element name="meta-queries" type="s:metaQueries" minOccurs="0"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -12,8 +15,8 @@
     <xs:complexType name="queries">
         <xs:sequence>
             <xs:choice maxOccurs="unbounded">
-                <xs:element name="query" type="simpleQuery"/>
-                <xs:element name="query-set" type="multiQuery"/>
+                <xs:element name="query" type="s:simpleQuery"/>
+                <xs:element name="query-set" type="s:multiQuery"/>
             </xs:choice>
         </xs:sequence>
         <xs:attribute name="before-suite" type="xs:string"/>
@@ -34,7 +37,7 @@
 
     <xs:complexType name="multiQuery">
         <xs:sequence>
-            <xs:element name="sql" type="sql" minOccurs="1" maxOccurs="unbounded"/>
+            <xs:element name="sql" type="s:sql" minOccurs="1" maxOccurs="unbounded"/>
         </xs:sequence>
         <xs:attribute name="before" type="xs:string"/>
         <xs:attribute name="after" type="xs:string"/>
@@ -44,8 +47,8 @@
     <xs:complexType name="metaQueries">
         <xs:sequence>
             <xs:choice maxOccurs="unbounded">
-                <xs:element name="query" type="simpleMetaQuery"/>
-                <xs:element name="query-set" type="multiMetaQuery"/>
+                <xs:element name="query" type="s:simpleMetaQuery"/>
+                <xs:element name="query-set" type="s:multiMetaQuery"/>
             </xs:choice>
         </xs:sequence>
     </xs:complexType>
@@ -60,7 +63,7 @@
 
     <xs:complexType name="multiMetaQuery">
         <xs:sequence>
-            <xs:element name="sql" type="sql" minOccurs="1" maxOccurs="unbounded"/>
+            <xs:element name="sql" type="s:sql" minOccurs="1" maxOccurs="unbounded"/>
         </xs:sequence>
         <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>

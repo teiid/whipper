@@ -8,7 +8,9 @@
     </parent>
     <artifactId>whipper</artifactId>
     <properties>
+        <jaxb.gen.out.dir>${basedir}/src/main/java</jaxb.gen.out.dir>
         <commons.codec.version>1.10</commons.codec.version>
+        <jaxb.plugin.version>2.3</jaxb.plugin.version>
     </properties>
     <dependencies>
         <dependency>
@@ -41,6 +43,61 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jaxb2-maven-plugin</artifactId>
+                <version>${jaxb.plugin.version}</version>
+                <configuration>
+                    <clearOutputDir>false</clearOutputDir>
+                    <outputDirectory>${jaxb.gen.out.dir}</outputDirectory>
+                    <generateEpisode>false</generateEpisode>
+                    <noPackageLevelAnnotations>true</noPackageLevelAnnotations>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>xjc-result</id>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <generateEpisode>true</generateEpisode>
+                            <sources>
+                                <source>${basedir}/jaxb/result.xsd</source>
+                            </sources>
+                            <extension>true</extension>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>xjc-error</id>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <sources>
+                                <source>${basedir}/jaxb/error.xsd</source>
+                            </sources>
+                            <extension>true</extension>
+                            <xjbSources>
+                                <xjbSource>${jaxb.gen.out.dir}/META-INF/sun-jaxb.episode</xjbSource>
+                            </xjbSources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>xjc-suite</id>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <sources>
+                                <source>${basedir}/jaxb/suite.xsd</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
