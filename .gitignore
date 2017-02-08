@@ -3,7 +3,7 @@
 .settings
 **/*.log
 target
-src/main/java/org/whipper/xml/result/*.java
-src/main/java/org/whipper/xml/suite/*.java
-src/main/java/org/whipper/xml/error/*.java
+whipper/src/main/java/org/whipper/xml/result/*.java
+whipper/src/main/java/org/whipper/xml/suite/*.java
+whipper/src/main/java/org/whipper/xml/error/*.java
 *.episode
