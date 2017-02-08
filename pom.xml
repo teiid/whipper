@@ -18,18 +18,23 @@
     </developers>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <war.base.name>${project.artifactId}</war.base.name>
         <slf4j.version>1.7.12</slf4j.version>
         <log4j.version>2.3</log4j.version>
         <junit.version>4.12</junit.version>
         <mockito.version>1.10.19</mockito.version>
+        <json.version>20160810</json.version>
+        <wildfly.swarm.version>2016.12.1</wildfly.swarm.version>
         <compiler.plugin.version>3.5.1</compiler.plugin.version>
         <jar.plugin.version>2.6</jar.plugin.version>
         <dependency.plugin.version>2.10</dependency.plugin.version>
+        <maven.war.plugin.version>2.6</maven.war.plugin.version>
         <java.version>1.7</java.version>
     </properties>
     <modules>
         <module>whipper</module>
-        <module>whipper-gui</module>
+        <module>whipper-rest</module>
+        <module>whipper-webapp</module>
     </modules>
     <dependencyManagement>
         <dependencies>
@@ -84,6 +89,18 @@
                 <version>${mockito.version}</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>org.json</groupId>
+                <artifactId>json</artifactId>
+                <version>${json.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly.swarm</groupId>
+                <artifactId>bom</artifactId>
+                <version>${wildfly.swarm.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
@@ -133,6 +150,33 @@
                     <configuration>
                         <outputDirectory>${project.build.directory}/lib</outputDirectory>
                         <includeScope>runtime</includeScope>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.wildfly.swarm</groupId>
+                    <artifactId>wildfly-swarm-plugin</artifactId>
+                    <version>${wildfly.swarm.version}</version>
+                    <configuration>
+                        <properties>
+                            <swarm.context.path>${war.base.name}</swarm.context.path>
+                        </properties>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>package</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-war-plugin</artifactId>
+                    <version>${maven.war.plugin.version}</version>
+                    <configuration>
+                        <failOnMissingWebXml>false</failOnMissingWebXml>
+                        <warName>${war.base.name}</warName>
+                        <packagingExcludes>%regex[.*log4j.*]</packagingExcludes>
                     </configuration>
                 </plugin>
             </plugins>

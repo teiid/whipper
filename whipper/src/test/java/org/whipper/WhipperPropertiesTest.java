@@ -237,7 +237,7 @@ public class WhipperPropertiesTest{
     @Test
     public void getIncludeScenarioTest(){
         WhipperProperties p = new WhipperProperties();
-        Assert.assertNull("Default is null.", p.getIncludeScenario());
+        Assert.assertSame("Default is all.", WhipperProperties.ALL_PATTERN, p.getIncludeScenario());
         p.setIncludeScenario("a");
         Assert.assertNotNull("Set to 'a'.", p.getIncludeScenario());
     }
@@ -245,7 +245,7 @@ public class WhipperPropertiesTest{
     @Test
     public void getExcludeScenarioTest(){
         WhipperProperties p = new WhipperProperties();
-        Assert.assertNull("Default is null.", p.getExcludeScenario());
+        Assert.assertSame("Default is nothing.", WhipperProperties.NOTHING_PATTERN, p.getExcludeScenario());
         p.setExcludeScenario("a");
         Assert.assertNotNull("Set to 'a'.", p.getExcludeScenario());
     }

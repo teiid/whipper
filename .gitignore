@@ -8,3 +8,9 @@ whipper/src/main/java/org/whipper/xml/result/*.java
 whipper/src/main/java/org/whipper/xml/suite/*.java
 whipper/src/main/java/org/whipper/xml/error/*.java
 *.episode
+dist
+node_modules
+npm-debug.log
+/e2e/*.js
+/e2e/*.map
+node

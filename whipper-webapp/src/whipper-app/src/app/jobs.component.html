@@ -1,0 +1,11 @@
+<ul>
+  <li *ngFor="let job of jobs; let i = index">
+    <span class="actionable" (click)="jobClicked(i)">{{job.id}}</span>
+    <ul [class.selected]="isSelected(i)" [class.hidden]="!isSelected(i)">
+      <li *ngFor="let scen of job.scenarios">
+        <span class="actionable">{{scen.id}} all - {{scen.all}}  pass - {{scen.pass}}  fail - {{scen.fail}}  skip - {{scen.skip}}</span>
+      </li>
+    </ul>
+  </li>
+</ul>
+

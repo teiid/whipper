@@ -2,6 +2,7 @@ package org.whipper;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -11,12 +12,17 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class WhipperProperties implements Cloneable{
+
     private static final Logger LOG = LoggerFactory.getLogger(WhipperProperties.class);
     private static final Pattern PH_PATTERN = Pattern.compile(".*\\$\\{.+\\}.*");
+    private static final String DUMP_PROPS_FILE = "initial.properties";
+    static final Pattern NOTHING_PATTERN = Pattern.compile("a^");
+    static final Pattern ALL_PATTERN = Pattern.compile("^(.*)$");
 
     /**
      * Keys.
@@ -79,6 +85,10 @@ public class WhipperProperties implements Cloneable{
 
     public WhipperProperties(Properties props){
         this.props = props == null ? new Properties() : props;
+    }
+
+    public JSONObject asJson(){
+        return new JSONObject(props);
     }
 
     public String getProperty(String key){
@@ -196,7 +206,7 @@ public class WhipperProperties implements Cloneable{
     }
 
     public Pattern getIncludeScenario(){
-        return getProperty(Keys.INCLUDE_SCENARIOS, Pattern.class, null);
+        return getProperty(Keys.INCLUDE_SCENARIOS, Pattern.class, ALL_PATTERN);
     }
 
     public String getExcludeScenarioStr(){
@@ -204,7 +214,7 @@ public class WhipperProperties implements Cloneable{
     }
 
     public Pattern getExcludeScenario(){
-        return getProperty(Keys.EXCLUDE_SCENARIOS, Pattern.class, null);
+        return getProperty(Keys.EXCLUDE_SCENARIOS, Pattern.class, NOTHING_PATTERN);
     }
 
     public String getIncludeSuiteStr(){
@@ -212,7 +222,7 @@ public class WhipperProperties implements Cloneable{
     }
 
     public Pattern getIncludeSuite(){
-        return getProperty(Keys.INCLUDE_SUITES, Pattern.class, null);
+        return getProperty(Keys.INCLUDE_SUITES, Pattern.class, ALL_PATTERN);
     }
 
     public String getExcludeSuiteStr(){
@@ -220,7 +230,7 @@ public class WhipperProperties implements Cloneable{
     }
 
     public Pattern getExcludeSuite(){
-        return getProperty(Keys.EXCLUDE_SUITES, Pattern.class, null);
+        return getProperty(Keys.EXCLUDE_SUITES, Pattern.class, NOTHING_PATTERN);
     }
 
     public String getArtifacstDirStr(){
@@ -429,9 +439,33 @@ public class WhipperProperties implements Cloneable{
         return props.size();
     }
 
+    public void dumpPropertiesToOutputDir(){
+        File f = getOutputDir();
+        if(!f.exists() && !f.mkdirs()){
+            LOG.error("Cannot create output directory {}", f.getAbsolutePath());
+        } else if (f.exists() && f.isFile()){
+            LOG.error("Cannot create output directory. {} is file.", f.getAbsolutePath());
+        } else {
+            try(FileWriter fw = new FileWriter(getDumpPropertiesFile(f))){
+                props.store(fw, "Automatic dump.");
+            } catch (IOException ex){
+                LOG.error("Cannot dump properties - {}.", ex.getMessage(), ex);
+            }
+        }
+    }
+
     @Override
     public String toString(){
         return props.toString();
+    }
+
+    private static File getDumpPropertiesFile(File dir){
+        return new File(dir, DUMP_PROPS_FILE);
+    }
+
+    public static WhipperProperties fromOutputDir(File dir){
+        File f = getDumpPropertiesFile(dir);
+        return f.exists() ? new WhipperProperties(f) : null;
     }
 
     /**

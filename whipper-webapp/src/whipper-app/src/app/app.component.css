@@ -1,0 +1,31 @@
+main{
+
+}
+header{
+  padding: 20px;
+  font: 25px;
+}
+header a{
+  width: 100%;
+  padding: 20px 10px;
+  font-size: 35px;
+  text-decoration: none;
+  color: black;
+}
+nav {
+  width: 100%;
+  background-color: #ddff99;
+  text-align: center;
+}
+nav a{
+  display: inline-block;
+  padding: 10px 15px;
+  color: black;
+}
+nav a.active{
+  background-color: #88cc00;
+}
+nav a:hover{
+  background-color: #334d00;
+  color: white;
+}

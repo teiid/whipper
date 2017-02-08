@@ -1,0 +1,18 @@
+div{
+  text-align: center;
+  font-size: 20px;
+}
+h1{
+  font-size: 30px;
+}
+h2{
+  font-size: 25px;
+}
+a{
+  color: blue;
+  font-weight: bold;
+}
+a:hover{
+  color: red;
+  background-color: #EEEEEE;
+}

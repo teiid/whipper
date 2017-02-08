@@ -34,6 +34,7 @@ public class Scenario implements TimeTracker{
     private final String id;
     private final List<Suite> suites = new LinkedList<>();
     private final List<ProgressMonitor> monitors = new LinkedList<>();
+    private final WhipperProperties initialProperties = new WhipperProperties();
 
     private long startTime = -1;
     private long endTime = -1;
@@ -78,25 +79,26 @@ public class Scenario implements TimeTracker{
      * @param props test properties
      */
     public void init(WhipperProperties props){
-        pingQuery = props.getPingQuery();
-        afterQuery = props.getAfterQuery();
-        expectedResultsDirName = props.getExpectedResultsDir();
-        querysetDirName = props.getQuerySetDir();
-        expectedResultsDir = new File(props.getArtifacstDir(),
+        initialProperties.copyFrom(props);
+        pingQuery = initialProperties.getPingQuery();
+        afterQuery = initialProperties.getAfterQuery();
+        expectedResultsDirName = initialProperties.getExpectedResultsDir();
+        querysetDirName = initialProperties.getQuerySetDir();
+        expectedResultsDir = new File(initialProperties.getArtifacstDir(),
                 querysetDirName + File.separator + expectedResultsDirName);
         if(!expectedResultsDir.exists() || !expectedResultsDir.isDirectory()){
             throw new IllegalArgumentException("Expected results directory " + expectedResultsDir +
                     " either does not exist or is not a directory.");
         }
 
-        outputDir = new File(props.getOutputDir(), id);
+        outputDir = new File(initialProperties.getOutputDir(), id);
         if(!outputDir.exists() && !outputDir.mkdirs()){
             throw new RuntimeException("Cannot create output directory " + outputDir.getAbsolutePath());
         } else if (outputDir.exists() && outputDir.isFile()){
             throw new RuntimeException("Cannot create output directory. " + outputDir.getAbsolutePath() + " is file.");
         }
 
-        String conFacName = props.getConnectionStrategy();
+        String conFacName = initialProperties.getConnectionStrategy();
         if(conFacName == null){
             LOG.warn("Connection strategy not set. Setting to driver.");
             conFacName = "DRIVER";
@@ -111,14 +113,14 @@ public class Scenario implements TimeTracker{
             throw new IllegalArgumentException("Unknown connection sgtrategy " + conFacName);
         }
 
-        connectionFactory.init(props);
-        timeForOneQuery = props.getTimeForOneQuery();
+        connectionFactory.init(initialProperties);
+        timeForOneQuery = initialProperties.getTimeForOneQuery();
         if(timeForOneQuery == -1l){
             LOG.warn("Time for one query is set to -1.");
         }
-        fastFail =  props.getQuerySetFastFail();
+        fastFail =  initialProperties.getQuerySetFastFail();
         metaQuerySetResultMode = new MetaQuerySetResultMode(id);
-        metaQuerySetResultMode.resetConfiguration(props);
+        metaQuerySetResultMode.resetConfiguration(initialProperties);
     }
 
     @Override
@@ -134,6 +136,10 @@ public class Scenario implements TimeTracker{
     @Override
     public long getDuration(){
         return (startTime < 0 || endTime < 0) ? -1l : endTime - startTime;
+    }
+
+    public WhipperProperties getInitialProperties(){
+        return initialProperties;
     }
 
     public MetaQuerySetResultMode getMetaQuerySetResultMode(){

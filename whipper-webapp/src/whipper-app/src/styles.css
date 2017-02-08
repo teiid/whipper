@@ -1,0 +1,19 @@
+body{
+  margin: 0px;
+}
+button::-moz-focus-inner{
+  border: 0;
+}
+a{
+  outline: 0;
+  text-decoration: none;
+}
+.visible{
+  display: inherit;
+}
+.hidden{
+  display: none;
+}
+.actionable{
+  cursor: pointer;
+}

@@ -86,7 +86,7 @@ public class Whipper {
     private final WhipperProperties properties;
     private final List<ProgressMonitor> monitors = new LinkedList<>();
     private ResultMode resultMode;
-    private Thread executionThread;
+    private WhipperThread executionThread;
     private WhipperResult result;
 
     public Whipper(WhipperProperties properties){
@@ -98,25 +98,11 @@ public class Whipper {
     }
 
     public void start(boolean inNewThread){
+        executionThread = new WhipperThread();
         if(inNewThread){
-            executionThread = new Thread(new Runnable(){
-                @Override
-                public void run(){
-                    try{
-                        runTest();
-                    } finally {
-                        executionThread = null;
-                    }
-                }
-            });
             executionThread.start();
         } else {
-            executionThread = Thread.currentThread();
-            try{
-                runTest();
-            } finally {
-                executionThread = null;
-            }
+            executionThread.go();
         }
     }
 
@@ -161,14 +147,15 @@ public class Whipper {
      */
     private void runTest(){
         result = null;
-        WhipperResult tmpRes = new WhipperResult();
         properties.resolvePlaceholders();
+        properties.dumpPropertiesToOutputDir();
         resultMode = getResultMode(properties);
         List<TestResultsWriter> trws = getResultWriters(properties);
         ScenarioIterator iter = new ScenarioIterator(properties, resultMode);
         for(ProgressMonitor pm : monitors){
             pm.starting(iter.getScenarioNames());
         }
+        WhipperResult tmpRes = new WhipperResult();
         try{
             while(iter.hasNext()){
                 Scenario scen = iter.next();
@@ -197,6 +184,7 @@ public class Whipper {
             }
         } finally {
             result = tmpRes;
+            result.dumpToDir(properties.getOutputDir());
             resultMode.destroy();
             for(ProgressMonitor pm : monitors){
                 pm.finished(result);
@@ -244,6 +232,21 @@ public class Whipper {
         return new NoneResultMode();
     }
 
+    private class WhipperThread extends Thread{
+        @Override
+        public void run(){
+            go();
+        }
+
+        private void go(){
+            try{
+                runTest();
+            } finally {
+                executionThread = null;
+            }
+        }
+    }
+
     /**
      * Iterator over scenarios.
      *
@@ -275,14 +278,9 @@ public class Whipper {
                     public boolean accept(File pathname) {
                         String name = pathname.getName().trim();
                         String nameNoExt = removeExtension(name);
-                        boolean accept = pathname.isFile() && name.endsWith(".properties");
-                        if(accept && incl != null){
-                            accept = incl.matcher(nameNoExt).matches();
-                        }
-                        if(accept && excl != null){
-                            accept = !excl.matcher(nameNoExt).matches();
-                        }
-                        return accept;
+                        return pathname.isFile() && name.endsWith(".properties")
+                                && incl.matcher(nameNoExt).matches()
+                                && !excl.matcher(nameNoExt).matches();
                     }
                 });
             }
@@ -375,12 +373,6 @@ public class Whipper {
                 }
                 Pattern includePattern = props.getIncludeSuite();
                 Pattern excludePattern = props.getExcludeSuite();
-                if(includePattern == null){
-                    includePattern = Pattern.compile(".*");
-                }
-                if(excludePattern == null){
-                    excludePattern = Pattern.compile("");
-                }
                 LOG.debug("suite include pattern: {}", includePattern);
                 LOG.debug("suite exclude pattern: {}", excludePattern);
                 for(File f : suites){

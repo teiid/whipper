@@ -269,7 +269,9 @@ public class Query implements TimeTracker{
 
         @Override
         public String toString() {
-            StringBuilder sb = new StringBuilder().append(id)
+            StringBuilder sb = new StringBuilder(querySet.getId())
+                    .append(',')
+                    .append(id)
                     .append(',')
                     .append(pass ? "pass" : "fail")
                     .append(',')
