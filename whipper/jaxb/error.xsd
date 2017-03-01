@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="xml.whipper.org/error"
-           xmlns:e="xml.whipper.org/error"
-           xmlns:r="xml.whipper.org/result"
+           targetNamespace="http://xml.whipper.org/error"
+           xmlns:r="http://xml.whipper.org/result"
            elementFormDefault="qualified">
-    <xs:import namespace="xml.whipper.org/result" schemaLocation="result.xsd"/>
+    <xs:import namespace="http://xml.whipper.org/result" schemaLocation="result.xsd"/>
     <xs:element name="query-error">
         <xs:complexType>
             <xs:sequence>

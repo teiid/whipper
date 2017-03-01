@@ -17,7 +17,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.whipper.ActualResultHolder;
 
 public class ActualResultHolderTest {
 
@@ -253,7 +252,7 @@ public class ActualResultHolderTest {
         Assert.assertTrue("Is no-result.", holder.isNoResult());
     }
 
-    private class IntGtMaxLe0 extends BaseMatcher<Integer> {
+    private class IntGtMaxLe0 extends BaseMatcher<Integer>{
         private int max;
         private IntGtMaxLe0(int max) {
             this.max = max;

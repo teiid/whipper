@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="xml.whipper.org/result"
-           xmlns:r="xml.whipper.org/result"
+           targetNamespace="http://xml.whipper.org/result"
+           xmlns:r="http://xml.whipper.org/result"
            elementFormDefault="qualified">
     <xs:element name="result">
         <xs:complexType>
@@ -19,6 +19,7 @@
             <xs:element name="no-result">
                 <xs:complexType/>
             </xs:element>
+            <xs:element name="sql" type="xs:string"/>
         </xs:choice>
         <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>

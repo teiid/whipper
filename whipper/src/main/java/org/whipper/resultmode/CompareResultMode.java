@@ -75,7 +75,7 @@ public class CompareResultMode implements ResultMode {
                 q.getSuite().getId() + File.separator + q.getSuite().getId() + "_" + q.getId() + ".xml");
         ResultHolder out = new ResultHolder();
         try{
-            holder.buildResult(result);
+            holder.buildResult(result, q);
             boolean eq = holder.equals(q.getActualResult(), !q.getSql().toUpperCase().contains(" ORDER BY "), allowedDivergence);
             if(!eq){
                 writeErrorFile(q);

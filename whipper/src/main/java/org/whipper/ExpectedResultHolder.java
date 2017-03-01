@@ -33,11 +33,12 @@ public class ExpectedResultHolder {
      * Builds holders based on input XML file.
      *
      * @param xmlFilePath XMl file with expected result
+     * @param q original query
      * @throws IOException if some error occurs or in input file is malformed
      */
-    public void buildResult(File xmlFilePath) throws IOException{
+    public void buildResult(File xmlFilePath, Query q) throws IOException{
         clear();
-        XmlHelper.loadResult(xmlFilePath, this);
+        XmlHelper.loadResult(xmlFilePath, this, q);
     }
 
     /**

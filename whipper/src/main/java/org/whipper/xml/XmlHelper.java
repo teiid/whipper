@@ -34,6 +34,7 @@ import org.whipper.QuerySet;
 import org.whipper.Scenario;
 import org.whipper.Suite;
 import org.whipper.exceptions.WhipperException;
+import org.whipper.resultmode.NoneResultMode;
 import org.whipper.resultmode.ResultMode;
 import org.whipper.xml.error.QueryError;
 import org.whipper.xml.result.QueryException;
@@ -59,6 +60,7 @@ import org.whipper.xml.suite.Sql;
 public class XmlHelper {
 
     private static final Charset UTF_8 = Charset.forName("UTF-8");
+    private static final ResultMode NONE = new NoneResultMode();
     /* XML 1.0 valid characters - #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF] */
     private static final Pattern INVALID_XML_1_0_TEXT = Pattern.compile(".*[^\u0009\r\n\u0020-\uD7FF\uE000-\uFFFD\ud800\udc00-\udbff\udfff].*");
     /* XML tags */
@@ -192,20 +194,21 @@ public class XmlHelper {
      * Loads result from file and stores it in expected result holder.
      *
      * @param f file with result
-     * @param ehr expected result holder where result will be stored
+     * @param erh expected result holder where result will be stored
+     * @param q original query
      * @throws IOException if some error occurs
      */
-    public static void loadResult(File f, ExpectedResultHolder ehr) throws IOException{
+    public static void loadResult(File f, ExpectedResultHolder erh, Query q) throws IOException{
         try(FileInputStream fis = new FileInputStream(f)){
             Result res = (Result)RESULT_UNMARSHALLER.unmarshal(fis);
             QueryResultType qr = res.getQueryResult();
-            ehr.setOriginalResult(qr);
+            erh.setOriginalResult(qr);
             if(qr.getUpdate() != null){
-                ehr.setUpdateCount(qr.getUpdate().getUpdateCount());
+                erh.setUpdateCount(qr.getUpdate().getUpdateCount());
             } else if(qr.getException() != null){
-                ehr.setExceptionClass(qr.getException().getClazz());
-                ehr.setExceptionMessage(qr.getException().getMessage());
-                ehr.setExceptionRegex(qr.getException().getMessageRegex());
+                erh.setExceptionClass(qr.getException().getClazz());
+                erh.setExceptionMessage(qr.getException().getMessage());
+                erh.setExceptionRegex(qr.getException().getMessageRegex());
             } else if(qr.getSelect() != null){
                 Select s = qr.getSelect();
                 Table t = qr.getTable();
@@ -232,9 +235,23 @@ public class XmlHelper {
                     }
                     rows.add(columns);
                 }
-                ehr.setColumnLabels(labels);
-                ehr.setColumnTypeNames(types);
-                ehr.setRows(rows);
+                erh.setColumnLabels(labels);
+                erh.setColumnTypeNames(types);
+                erh.setRows(rows);
+            } else if(qr.getSql() != null){
+                Query sql = new Query(q.getScenario(), q.getSuite(), q.getQuerySet(), q.getId() + "_expected_result", qr.getSql(), NONE);
+                sql.run();
+                ActualResultHolder sqlArh = sql.getActualResult();
+                if(sqlArh.isResult()){
+                    erh.setColumnLabels(sqlArh.getColumnLabels());
+                    erh.setColumnTypeNames(sqlArh.getColumnTypeNames());
+                    erh.setRows(sqlArh.getRows());
+                } else if(sqlArh.isException()){
+                    erh.setExceptionClass(sqlArh.getOriginalExceptionClass().getName());
+                    erh.setExceptionMessage(sqlArh.getRootCauseExceptionMessage());
+                } else if(sqlArh.isUpdate()){
+                    erh.setUpdateCount(sqlArh.getUpdateCount());
+                }
             } else if (qr.getNoResult() != null){
                 // OK, 'no-result' in the XML file
             } else {
@@ -385,9 +402,10 @@ public class XmlHelper {
     /**
      * Creates query result XML element.
      *
-     * @param arh
-     * @param name
-     * @param appendStackTrace
+     * @param arh actual result holder
+     * @param name name of the result
+     * @param appendStackTrace whether append full stack trace of the exception
+     *      to the result or not
      * @return query result
      */
     private static QueryResultType produceQueryResult(ActualResultHolder arh, String name, boolean appendStackTrace){
@@ -455,7 +473,7 @@ public class XmlHelper {
     /**
      * Stores object into file.
      *
-     * @param m marshaler
+     * @param m marshaller
      * @param out output file
      * @param o object to be stored
      * @throws IOException if some error occurs
