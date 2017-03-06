@@ -23,6 +23,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.annotation.XmlSchema;
 import javax.xml.namespace.QName;
 
 import org.apache.commons.codec.binary.Base64;
@@ -449,10 +450,11 @@ public class XmlHelper {
                     if(cell != null){
                         String cellStr = cell.toString();
                         QName tagName;
+                        String ns = Result.class.getPackage().getAnnotation(XmlSchema.class).namespace();
                         if(isPrintable(cellStr)){
-                            tagName = new QName(types.get(i));
+                            tagName = new QName(ns, types.get(i));
                         } else {
-                            tagName = new QName(TYPE_UNPRINTABLE);
+                            tagName = new QName(ns, TYPE_UNPRINTABLE);
                             cellStr = encode(cellStr);
                         }
                         JAXBElement<String> elem = new JAXBElement<>(tagName, String.class, cellStr);

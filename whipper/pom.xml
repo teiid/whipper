@@ -52,7 +52,6 @@
                     <clearOutputDir>false</clearOutputDir>
                     <outputDirectory>${jaxb.gen.out.dir}</outputDirectory>
                     <generateEpisode>false</generateEpisode>
-                    <noPackageLevelAnnotations>true</noPackageLevelAnnotations>
                 </configuration>
                 <executions>
                     <execution>
