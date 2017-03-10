@@ -86,7 +86,7 @@
                     <apiSources>
                         <apiSource>
                             <springmvc>false</springmvc>
-                            <locations>org.whipper.gui.web</locations>
+                            <locations>org.whipper.web</locations>
                             <schemes>http</schemes>
                             <basePath>/${war.base.name}</basePath>
                             <info>
