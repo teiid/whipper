@@ -1,0 +1,12 @@
+<assembly>
+  <id>standalone-app</id>
+  <formats>
+    <format>zip</format>
+    <format>tar.gz</format>
+  </formats>
+  <fileSets>
+    <fileSet>
+      <directory>${web.app.dist.path}</directory>
+    </fileSet>
+  </fileSets>
+</assembly>

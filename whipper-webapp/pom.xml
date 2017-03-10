@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.whipper</groupId>
@@ -11,7 +12,9 @@
     <description>Web Application which cooperates with Whipper REST service.</description>
     <properties>
         <web.app.base>whipper-app</web.app.base>
-        <web.app.path>${basedir}/src/${web.app.base}</web.app.path>
+        <web.app.path>${project.basedir}/src/${web.app.base}</web.app.path>
+        <web.app.dist.path>${web.app.path}/dist</web.app.dist.path>
+        <index.base.href>/${war.base.name}/</index.base.href>
         <node.version>v6.9.4</node.version>
         <npm.version>3.10.10</npm.version>
         <exec.plugin.version>1.5.0</exec.plugin.version>
@@ -21,8 +24,31 @@
         <profile>
             <id>standalone</id>
             <properties>
-                <war.base.name></war.base.name>
+                <index.base.href>/</index.base.href>
+                <assembly.plugin.version>3.0.0</assembly.plugin.version>
             </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <version>${assembly.plugin.version}</version>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>${project.basedir}/src/assembly/standalone-app.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                                <phase>process-resources</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
         <profile>
             <id>feswarm</id>
@@ -76,9 +102,8 @@
                         <goals>
                             <goal>npm</goal>
                         </goals>
-                        <phase>generate-resources</phase>
                         <configuration>
-                            <arguments>run dist /${war.base.name}</arguments>
+                            <arguments>run dist ${index.base.href}</arguments>
                         </configuration>
                     </execution>
                 </executions>

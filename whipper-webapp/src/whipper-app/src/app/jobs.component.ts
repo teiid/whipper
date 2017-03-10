@@ -19,17 +19,14 @@ export class JobsComponent implements OnInit {
 
   getJobs(): void{
     console.log("getting jobs");
-    //let o:Observer<Job[]> = new Observer<Job[]>(() => {},() => {},() => {});
-    this.wrs.getJobs(false).map(
+    this.wrs.getJobs().then(
       j => {
         console.log("result", j);
         this.jobs = j;
         this.jobsSelection = new Array(this.jobs.length);
         this.jobsSelection.fill(false);
-      },
-      e => console.log(e),
-      () => console.log("done")
-    );
+      })
+    .catch(e => console.log(e));
   }
 
   ngOnInit() {

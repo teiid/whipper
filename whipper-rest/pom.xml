@@ -10,7 +10,7 @@
     <name>Whipper REST</name>
     <description>REST service for running Whipper and checking results.</description>
     <properties>
-        <javaxee.we.api.version>7.0</javaxee.we.api.version>
+        <javaee.version>7.0</javaee.version>
         <swagger.version>1.5.9</swagger.version>
         <swagger.plugin.version>3.1.2</swagger.plugin.version>
     </properties>
@@ -58,7 +58,7 @@
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-web-api</artifactId>
-            <version>${javaxee.we.api.version}</version>
+            <version>${javaee.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -92,9 +92,9 @@
                             <info>
                                 <title>Whipper REST API</title>
                                 <version>${project.version}</version>
-                                <description>Whiper REST API specification</description>
+                                <description>Whipper REST API specification</description>
                             </info>
-                            <swaggerDirectory>${basedir}/src/main/webapp/</swaggerDirectory>
+                            <swaggerDirectory>${project.basedir}/src/main/webapp</swaggerDirectory>
                         </apiSource>
                     </apiSources>
                 </configuration>

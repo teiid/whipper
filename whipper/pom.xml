@@ -8,7 +8,7 @@
     </parent>
     <artifactId>whipper</artifactId>
     <properties>
-        <jaxb.gen.out.dir>${basedir}/src/main/java</jaxb.gen.out.dir>
+        <jaxb.gen.out.dir>${project.basedir}/src/main/java</jaxb.gen.out.dir>
         <commons.codec.version>1.10</commons.codec.version>
         <jaxb.plugin.version>2.3</jaxb.plugin.version>
     </properties>
@@ -79,7 +79,7 @@
                         <configuration>
                             <generateEpisode>true</generateEpisode>
                             <sources>
-                                <source>${basedir}/jaxb/result.xsd</source>
+                                <source>${project.basedir}/jaxb/result.xsd</source>
                             </sources>
                             <extension>true</extension>
                         </configuration>
@@ -92,7 +92,7 @@
                         <phase>generate-sources</phase>
                         <configuration>
                             <sources>
-                                <source>${basedir}/jaxb/error.xsd</source>
+                                <source>${project.basedir}/jaxb/error.xsd</source>
                             </sources>
                             <extension>true</extension>
                             <xjbSources>
@@ -108,7 +108,7 @@
                         <phase>generate-sources</phase>
                         <configuration>
                             <sources>
-                                <source>${basedir}/jaxb/suite.xsd</source>
+                                <source>${project.basedir}/jaxb/suite.xsd</source>
                             </sources>
                         </configuration>
                     </execution>
