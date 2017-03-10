@@ -1,4 +1,4 @@
-package org.whipper.gui.web.rest;
+package org.whipper.web.rest;
 
 import java.io.IOException;
 

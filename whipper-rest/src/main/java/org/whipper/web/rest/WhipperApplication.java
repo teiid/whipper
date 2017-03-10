@@ -1,4 +1,4 @@
-package org.whipper.gui.web.rest;
+package org.whipper.web.rest;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;

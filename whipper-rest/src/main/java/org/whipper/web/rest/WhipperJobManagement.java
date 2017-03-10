@@ -1,4 +1,4 @@
-package org.whipper.gui.web.rest;
+package org.whipper.web.rest;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -15,8 +15,8 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.whipper.WhipperProperties;
-import org.whipper.gui.web.WhipperJob;
-import org.whipper.gui.web.WhipperJobService;
+import org.whipper.web.WhipperJob;
+import org.whipper.web.WhipperJobService;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -34,7 +34,7 @@ public class WhipperJobManagement{
     @Inject
     private WhipperJobService runner;
     @Inject
-    private org.whipper.gui.web.Context context;
+    private org.whipper.web.Context context;
 
     @Path("start")
     @POST

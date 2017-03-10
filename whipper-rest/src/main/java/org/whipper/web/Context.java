@@ -1,4 +1,4 @@
-package org.whipper.gui.web;
+package org.whipper.web;
 
 import java.io.File;
 
