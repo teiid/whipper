@@ -16,6 +16,9 @@ import javax.inject.Inject;
 import org.json.JSONArray;
 import org.whipper.WhipperProperties;
 
+/**
+ * Job service. Serve as an interface for manipulating with jobs.
+ */
 @Singleton
 @Startup
 public class WhipperJobService{
@@ -34,12 +37,18 @@ public class WhipperJobService{
     @Inject
     private Context context;
 
+    /**
+     * Starts new job.
+     *
+     * @param props properties
+     * @return new job's ID
+     */
     @Lock(LockType.WRITE)
     public String startNewJob(WhipperProperties props){
         String id = nextFreeId();
         props.setOutputDir(context.getResultDir(id).getAbsolutePath());
         if(!props.getProperty(ARTIFACTS_PATH_ABSOLUTE_PROP, boolean.class, false)){
-            props.setArtifacstDir(context.getArtifactDir(props.getArtifacstDirStr()).getAbsolutePath());
+            props.setArtifactsDir(context.getArtifactDir(props.getArtifactsDirStr()).getAbsolutePath());
         }
         if(!props.getProperty(SCENARIOS_PATH_ABSOLUTE_PROP, boolean.class, false)){
             props.setScenario(context.getScenarioDir(props.getScenarioStr()).getAbsolutePath());
@@ -50,6 +59,12 @@ public class WhipperJobService{
         return id;
     }
 
+    /**
+     * Returns job with specified ID or {@code null} if job does not exist.
+     *
+     * @param id ID of the job
+     * @return job with specified ID
+     */
     @Lock(LockType.READ)
     public WhipperJob getJob(String id){
         WhipperJob wj = jobCache.get(id);
@@ -59,6 +74,11 @@ public class WhipperJobService{
         return wj;
     }
 
+    /**
+     * Deletes job with specified ID.
+     *
+     * @param id job ID
+     */
     @Lock(LockType.WRITE)
     public void deleteJob(String id){
         if(id == null){
@@ -70,6 +90,11 @@ public class WhipperJobService{
         }
     }
 
+    /**
+     * Returns array of brief summary of all jobs.
+     *
+     * @return brief summary of all jobs
+     */
     @Lock(LockType.READ)
     public JSONArray getJobsBriefSummary(){
         File rd = context.getResultDir(null);
@@ -91,6 +116,12 @@ public class WhipperJobService{
         return out;
     }
 
+    /**
+     * Reads job from results directory.
+     *
+     * @param key job id
+     * @return new job or {@code null} if job does not exist
+     */
     private WhipperJob readJob(String key){
         if(!ID_PATTERN.matcher(key).matches()){
             return null;
@@ -106,6 +137,12 @@ public class WhipperJobService{
         return wj;
     }
 
+    /**
+     * Store job in local cache.
+     *
+     * @param key job key (i.e. ID)
+     * @param job job to be stored
+     */
     private void storeJob(String key, WhipperJob job){
         if((jobCache.size() >= CACHE_LIMIT) && !jobCache.containsKey(key)){
             // clear old jobs
@@ -120,6 +157,11 @@ public class WhipperJobService{
         jobCache.put(key, job);
     }
 
+    /**
+     * Returns next free id which can be assigned to new job.
+     *
+     * @return job ID
+     */
     private String nextFreeId(){
         String id;
         do{
@@ -128,6 +170,11 @@ public class WhipperJobService{
         return id;
     }
 
+    /**
+     * Returns next ID in the sequence of IDs.
+     *
+     * @return next ID
+     */
     private String nextId(){
         char[] idChrs = new char[ID_LENGTH];
         for(int i = 0; i < ID_LENGTH; i++){

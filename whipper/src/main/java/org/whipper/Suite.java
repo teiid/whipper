@@ -18,15 +18,12 @@ import org.whipper.exceptions.ServerNotAvailableException;
  */
 public class Suite implements Comparable<Suite>, TimeTracker{
 
-    private static final String AFTER_SUITE = "after_suite";
-
-    private static final String AFTER_SET = "after_set";
-
-    private static final String BEFORE_SET = "before_set";
-
-    private static final String BEFORE_SUITE = "before_suite";
-
     private static final Logger LOG = LoggerFactory.getLogger(Suite.class);
+
+    private static final String AFTER_SUITE = "after_suite";
+    private static final String BEFORE_SUITE = "before_suite";
+    private static final String AFTER_SET = "after_set";
+    private static final String BEFORE_SET = "before_set";
 
     private final List<QuerySet> querySets = new LinkedList<>();
     private final List<ProgressMonitor> monitors = new LinkedList<>();
@@ -47,6 +44,12 @@ public class Suite implements Comparable<Suite>, TimeTracker{
         this.id = id;
     }
 
+    /**
+     * Sets progress monitors for this suite. Including before and after
+     * query sets
+     *
+     * @param monitors monitors to be set
+     */
     public void setProgressMonitors(List<ProgressMonitor> monitors){
         this.monitors.clear();
         if(monitors != null){

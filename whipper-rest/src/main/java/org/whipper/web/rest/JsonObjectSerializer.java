@@ -15,6 +15,9 @@ import javax.ws.rs.ext.Provider;
 
 import org.json.JSONObject;
 
+/**
+ * Writer which writes JSON objects to output stream.
+ */
 @Provider
 @Produces(MediaType.APPLICATION_JSON)
 public class JsonObjectSerializer implements MessageBodyWriter<JSONObject>{

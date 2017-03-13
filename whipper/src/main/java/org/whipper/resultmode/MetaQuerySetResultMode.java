@@ -14,6 +14,9 @@ import org.whipper.xml.XmlHelper;
 import org.whipper.xml.result.ObjectFactory;
 import org.whipper.xml.result.QueryResultType;
 
+/**
+ * Result mode for handling meta-queries (before_*, after_*).
+ */
 public class MetaQuerySetResultMode implements ResultMode{
 
     private static final ExpectedResultHolder EMPTY = new ExpectedResultHolder();
@@ -29,6 +32,11 @@ public class MetaQuerySetResultMode implements ResultMode{
     private File outputDir;
     private final String scenario;
 
+    /**
+     * Creates new result mode.
+     *
+     * @param scenario scenario
+     */
     public MetaQuerySetResultMode(String scenario){
         this.scenario = scenario;
     }
@@ -68,6 +76,11 @@ public class MetaQuerySetResultMode implements ResultMode{
         return out;
     }
 
+    /**
+     * Writes error for main query set (e.g. if before_* meta query set failed).
+     *
+     * @param qs main query set
+     */
     public void writeErrorsForMainQuerySet(QuerySet qs){
         for(Query q : qs.getQueries()){
             try{

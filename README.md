@@ -8,7 +8,49 @@ For any issues please log [JIRA](https://issues.jboss.org/browse/TEIIDWHIP)
 
 # Usage
 
-TODO
+## Installation
+
+Whipper is a maven project. Hovewer, it is not deployed to any public
+maven repository.
+
+* If you want to put Whipper JAR to classpath of your application,
+run `mvn package` command and put built whipper JAR and all libraries
+to the classpath. All required JARs should be placed in `target/lib`
+directory.
+* If you want to use it as a maven dependency, you need to either install it
+to your local repository or deploy it to remote repository.
+	* installation to local repository - run `mvn install` command
+	* deploying to remote repository - run `mvn deploy -DaltDeploymentRepository=<repository>`
+    command where `repository` is in form `id::layout::url`.
+
+## Usage
+
+You can run Whipper in several ways
+
+### Run Whipper programatically
+
+You can run Whipper from you application. An antry point class for this
+is `org.whipper.Whipper`.
+
+```java
+WhipperProperties props = new WhipperProperites(); // set all properties or use one of other constructors
+Whipper whipper = new Whipper(props);
+whipper.start();
+WhipperResult result = whipper.result();
+// process the result
+```
+
+For more details, please refer to JavaDoc.
+
+### Run Whipper from command line
+
+Build the Whipper (`mvn package`) and invoke it's main class from command
+line `java -jar target/whipper-<version>.jar`. For more details see help
+(`java -jar target/whipper-<version>.jar -h`)
+
+### Use graphical user interface
+
+For information how to use user interface refere to respective README.
 
 # How to contribute
 

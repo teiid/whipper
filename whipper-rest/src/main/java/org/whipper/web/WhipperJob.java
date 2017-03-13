@@ -22,6 +22,9 @@ import org.whipper.Whipper;
 import org.whipper.WhipperProperties;
 import org.whipper.WhipperResult;
 
+/**
+ * Class which represents one whipper job (i.e. one test run).
+ */
 public class WhipperJob implements ProgressMonitor{
 
     private static final String ID = "id";
@@ -43,15 +46,29 @@ public class WhipperJob implements ProgressMonitor{
     private String runningMetaQS;
     private String runningMetaQ;
 
+    /**
+     * Creates new job.
+     *
+     * @param id is of the job
+     * @param props initial properties
+     */
     WhipperJob(String id, WhipperProperties props){
         this.id = id;
         this.props = props;
     }
 
+    /**
+     * Returns ID of this job.
+     *
+     * @return ID
+     */
     public String getId(){
         return id;
     }
 
+    /**
+     * Starts job.
+     */
     public void start(){
         finished = false;
         whipper = new Whipper(this.props);
@@ -59,12 +76,20 @@ public class WhipperJob implements ProgressMonitor{
         whipper.start(true);
     }
 
+    /**
+     * Stops job.
+     */
     public void stop(){
         if(whipper != null){
             whipper.stop();
         }
     }
 
+    /**
+     * Returns result of this job as a JSON object.
+     *
+     * @return result as a JSON object
+     */
     public synchronized JSONObject resultToJson(){
         JSONObject o = new JSONObject();
         o.put(ID, id);
@@ -79,6 +104,14 @@ public class WhipperJob implements ProgressMonitor{
         return o;
     }
 
+    /**
+     * Returns brief summary of this job.
+     * <p>
+     * Brief summary contains only overall information about number of
+     * all/passed/failed/skipped queries.
+     *
+     * @return brief summary
+     */
     public synchronized JSONObject briefResultToJson(){
         JSONObject o = new JSONObject();
         o.put(ID, id);
@@ -90,6 +123,13 @@ public class WhipperJob implements ProgressMonitor{
         return o;
     }
 
+    /**
+     * Returns result of this job as a ZIP input stream.
+     *
+     * @param context Whipper application context
+     * @return result or {@code null} if job is running
+     * @see #isFinished()
+     */
     public InputStream resultToZip(Context context){
         if(finished){
             return null;
@@ -111,14 +151,33 @@ public class WhipperJob implements ProgressMonitor{
         }
     }
 
+    /**
+     * Returns {@code true} if this job has started and finished,
+     * {@code false} otherwise.
+     *
+     * @return whether this job finished or not
+     */
     public boolean isFinished(){
         return finished;
     }
 
+    /**
+     * Returns full path to the job's output directory.
+     *
+     * @return output directory of this job
+     */
     public File getFullPathToJob(){
         return props.getOutputDir();
     }
 
+    /**
+     * Reads job from output directory.
+     *
+     * @param id ID of the job
+     * @param f directory with this job.
+     * @return new job or {@code null} if directory does not contain
+     *      proper representation of the job
+     */
     static WhipperJob fromDir(String id, File f){
         WhipperProperties wp = WhipperProperties.fromOutputDir(f);
         WhipperResult wr = WhipperResult.fromDir(f);
@@ -168,6 +227,12 @@ public class WhipperJob implements ProgressMonitor{
         finished = true;
     }
 
+    /**
+     * Fills holder.
+     *
+     * @param h holder to be filled
+     * @param r result
+     */
     private void fillHolder(Holder h, WhipperResult.Result r){
         h.all = r.getAll();
         h.pass = r.getPass();
@@ -175,6 +240,14 @@ public class WhipperJob implements ProgressMonitor{
         h.countSkip();
     }
 
+    /**
+     * Creates new holder and puts it into map.
+     *
+     * @param map map
+     * @param key key of the holder
+     * @param nestedKey nested key for the holder's nested holders
+     * @return created holder
+     */
     private Holder createAndPut(Map<String, Holder> map, String key, String nestedKey){
         Holder h = new Holder(key, nestedKey);
         map.put(key, h);
@@ -275,6 +348,9 @@ public class WhipperJob implements ProgressMonitor{
         runningMetaQ = null;
     }
 
+    /**
+     * Holder for result of the job.
+     */
     private static class Holder implements JSONString{
         private final String nestedKey;
         private final Map<String, Holder> nested;
@@ -285,12 +361,21 @@ public class WhipperJob implements ProgressMonitor{
         private int skip;
         private String err;
 
+        /**
+         * Creates new holder.
+         *
+         * @param id id of the holder
+         * @param nestedKey nested key for nested holders (for JSON)
+         */
         private Holder(String id, String nestedKey){
             this.id = id;
             this.nestedKey = nestedKey;
             this.nested = this.nestedKey == null ? null : new TreeMap<String, Holder>();
         }
 
+        /**
+         * Calculates and sets number of skipped queries.
+         */
         private void countSkip(){
             skip = all - fail - pass;
         }
@@ -307,6 +392,11 @@ public class WhipperJob implements ProgressMonitor{
             return o.toString();
         }
 
+        /**
+         * Returns brief summary as a JSON object.
+         *
+         * @return brief summary (without nested holders)
+         */
         public JSONObject briefSummary(){
             JSONObject o = new JSONObject();
             o.put(ID, id);

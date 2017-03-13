@@ -89,14 +89,34 @@ public class Whipper {
     private WhipperThread executionThread;
     private WhipperResult result;
 
-    public Whipper(WhipperProperties properties){
+    /**
+     * Creates new instance of Whipper.
+     *
+     * @param properties properties
+     * @throws IllegalArgumentException if proeprties is {@code null}.
+     */
+    public Whipper(WhipperProperties properties) throws IllegalArgumentException{
+        if(properties == null){
+            throw new IllegalArgumentException("Properties cannot be null.");
+        }
         this.properties = properties;
     }
 
+    /**
+     * Starts Whipper test in calling thread.
+     *
+     * @see #start(boolean)
+     */
     public void start(){
         start(false);
     }
 
+    /**
+     * Starts Whipper test.
+     *
+     * @param inNewThread whether to start Whipper in calling thread ({@code false})
+     *      or in new thread ({@code true}).
+     */
     public void start(boolean inNewThread){
         executionThread = new WhipperThread();
         if(inNewThread){
@@ -106,6 +126,9 @@ public class Whipper {
         }
     }
 
+    /**
+     * Stops execution of current Whipper test.
+     */
     public void stop(){
         if(executionThread != null){
             // potentially dangerous - not synchronized
@@ -113,6 +136,11 @@ public class Whipper {
         }
     }
 
+    /**
+     * Returns result of the test.
+     *
+     * @return test result
+     */
     public WhipperResult getResult(){
         return result;
     }
@@ -124,6 +152,12 @@ public class Whipper {
         }
     }
 
+    /**
+     * Register progress monitor for next execution.
+     *
+     * @param monitor monitor to be registered
+     * @throws IllegalStateException if execution of the test has already started
+     */
     public void registerProgressMonitor(ProgressMonitor monitor) throws IllegalStateException{
         if(executionThread != null){
             throw new IllegalStateException("Cannot register monitor. Whipper is already running.");
@@ -133,6 +167,12 @@ public class Whipper {
         }
     }
 
+    /**
+     * Unregisters progress monitor for next execution.
+     *
+     * @param monitor monitor to be unregistered
+     * @throws IllegalStateException if execution of the test has already started
+     */
     public void unregisterProgressMonitor(ProgressMonitor monitor) throws IllegalStateException{
         if(executionThread != null){
             throw new IllegalStateException("Cannot unregister monitor. Whipper is already running.");
@@ -162,6 +202,7 @@ public class Whipper {
                 if(scen == null){
                     continue;
                 }
+                scen.setProgressMonitors(monitors);
                 resultMode.resetConfiguration(iter.initProps);
                 if(scen.before()){
                     try{
@@ -232,12 +273,18 @@ public class Whipper {
         return new NoneResultMode();
     }
 
+    /**
+     * Thread for executing Whippe test.
+     */
     private class WhipperThread extends Thread{
         @Override
         public void run(){
             go();
         }
 
+        /**
+         * Runs the test and clears execution thread.
+         */
         private void go(){
             try{
                 runTest();
@@ -261,6 +308,12 @@ public class Whipper {
         private final ResultMode rm;
         private int idx = 0;
 
+        /**
+         * Creates new instance.
+         *
+         * @param props basic properties for all created scenarios
+         * @param rm result mode for all created scenarios
+         */
         private ScenarioIterator(final WhipperProperties props, ResultMode rm) {
             this.rm = rm;
             original = props.copy();
@@ -284,7 +337,7 @@ public class Whipper {
                     }
                 });
             }
-            File f = original.getArtifacstDir();
+            File f = original.getArtifactsDir();
             if(f == null){
                 LOG.warn("Artifacts directory is not set.");
                 artifactsDir = new File("");
@@ -312,6 +365,11 @@ public class Whipper {
             }
         }
 
+        /**
+         * Returns names of the scenarios.
+         *
+         * @return names of the scenarios
+         */
         private List<String> getScenarioNames(){
             List<String> out = new ArrayList<>(scenarios.length);
             for(File f : scenarios){

@@ -63,6 +63,11 @@ public class Scenario implements TimeTracker{
         this.id = id;
     }
 
+    /**
+     * Sets progress monitors for this scenario and all suites.
+     *
+     * @param monitors monitors to be set
+     */
     public void setProgressMonitors(List<ProgressMonitor> monitors){
         this.monitors.clear();
         if(monitors != null){
@@ -84,7 +89,7 @@ public class Scenario implements TimeTracker{
         afterQuery = initialProperties.getAfterQuery();
         expectedResultsDirName = initialProperties.getExpectedResultsDir();
         querysetDirName = initialProperties.getQuerySetDir();
-        expectedResultsDir = new File(initialProperties.getArtifacstDir(),
+        expectedResultsDir = new File(initialProperties.getArtifactsDir(),
                 querysetDirName + File.separator + expectedResultsDirName);
         if(!expectedResultsDir.exists() || !expectedResultsDir.isDirectory()){
             throw new IllegalArgumentException("Expected results directory " + expectedResultsDir +
@@ -138,10 +143,21 @@ public class Scenario implements TimeTracker{
         return (startTime < 0 || endTime < 0) ? -1l : endTime - startTime;
     }
 
+    /**
+     * Returns initial properties of this scenario which this scenario
+     * has been initialized with.
+     *
+     * @return initial properties
+     */
     public WhipperProperties getInitialProperties(){
         return initialProperties;
     }
 
+    /**
+     * Returns meta-query set result mode of this scenario.
+     *
+     * @return meta-query set result mode
+     */
     public MetaQuerySetResultMode getMetaQuerySetResultMode(){
         return metaQuerySetResultMode;
     }
@@ -204,7 +220,7 @@ public class Scenario implements TimeTracker{
     }
 
     /**
-     * Returns name of the directory with with query set (expected results and test queries).
+     * Returns name of the directory with query set (expected results and test queries).
      *
      * @return query set directory name
      */
@@ -350,12 +366,18 @@ public class Scenario implements TimeTracker{
         runMonitorsAfter();
     }
 
+    /**
+     * Runs starting method of all monitors.
+     */
     private void runMonitorsBefore(){
         for(ProgressMonitor pm : monitors){
             pm.startingScenario(this);
         }
     }
 
+    /**
+     * Runs ending method of all monitors.
+     */
     private void runMonitorsAfter(){
         for(ProgressMonitor pm : monitors){
             pm.scenarioFinished(this);

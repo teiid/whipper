@@ -19,19 +19,35 @@ import org.json.JSONTokener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Class which holds result of the test.
+ */
 public class WhipperResult implements Iterable<Entry<String, WhipperResult.Result>>{
 
     private static final Logger LOG = LoggerFactory.getLogger(WhipperResult.class);
     private final Result result;
 
+    /**
+     * Creates new result.
+     */
     public WhipperResult(){
         this(new Result(null, -1, -1, -1, "scenarios", 0));
     }
 
+    /**
+     * Creates new result.
+     *
+     * @param result result of the test.
+     */
     private WhipperResult(Result result){
         this.result = result;
     }
 
+    /**
+     * Collects results of the scenario and appends them to this result.
+     *
+     * @param scen scenario
+     */
     void collectStats(Scenario scen){
         Result h = new Result(scen.getId(), scen.getNumberOfAllQueries(), scen.getNumberOfPassedQueries(), scen.getNumberOfFailedQueries(), "suites", 1);
         result.nested.put(scen.getId(), h);
@@ -57,20 +73,54 @@ public class WhipperResult implements Iterable<Entry<String, WhipperResult.Resul
         }
     }
 
+    /**
+     * Returns result of the scenario.
+     *
+     * @param scenario scenario ID
+     * @return result of specified scenario or {@code null}
+     *      if result does not exist
+     */
     public Result get(String scenario){
         return result.get(scenario);
     }
 
+    /**
+     * Returns result of the suite.
+     *
+     * @param scenario scenario ID
+     * @param suite suite ID
+     * @return result of specified suite or {@code null}
+     *      if result does not exist
+     */
     public Result get(String scenario, String suite){
         Result s = get(scenario);
         return s == null ? null : s.get(suite);
     }
 
+    /**
+     * Returns result of the query set.
+     *
+     * @param scenario scenario ID
+     * @param suite suite ID
+     * @param querySet query set ID
+     * @return result of specified query set or {@code null}
+     *      if result does not exist
+     */
     public Result get(String scenario, String suite, String querySet){
         Result s = get(scenario, suite);
         return s == null ? null : s.get(querySet);
     }
 
+    /**
+     * Returns result of the query.
+     *
+     * @param scenario scenario ID
+     * @param suite suite ID
+     * @param querySet query set ID
+     * @param query query ID
+     * @return result of specified query or {@code null}
+     *      if result does not exist
+     */
     public Result get(String scenario, String suite, String querySet, String query){
         Result qs = get(scenario, suite, querySet);
         return qs == null ? null : qs.get(query);
@@ -81,10 +131,20 @@ public class WhipperResult implements Iterable<Entry<String, WhipperResult.Resul
         return result.iterator();
     }
 
+    /**
+     * Returns result of all scenarios.
+     *
+     * @return result of all scenarios (never {@code null})
+     */
     public Result get(){
         return result;
     }
 
+    /**
+     * Writes this result to file in specified directory.
+     *
+     * @param dir output directory
+     */
     public void dumpToDir(File dir){
         try(FileWriter fw = new FileWriter(getDumpFile(dir))){
             writeAsJson(fw);
@@ -93,6 +153,12 @@ public class WhipperResult implements Iterable<Entry<String, WhipperResult.Resul
         }
     }
 
+    /**
+     * Writes this result to {@link Writer} in JSON format.
+     *
+     * @param out output {@link Writer}
+     * @throws IOException if an I/O error occurs
+     */
     public void writeAsJson(Writer out) throws IOException{
         result.write(out, 2);
     }
@@ -102,6 +168,13 @@ public class WhipperResult implements Iterable<Entry<String, WhipperResult.Resul
         return result.toJSONString();
     }
 
+    /**
+     * Loads result from file in specified directory.
+     *
+     * @param dir directory where file with result is located
+     * @return returns result loaded from the directory or {@code null}
+     *      in case of I/O error
+     */
     public static WhipperResult fromDir(File dir){
         try(FileReader fr = new FileReader(getDumpFile(dir))){
             JSONObject o = new JSONObject(new JSONTokener(fr));
@@ -112,10 +185,20 @@ public class WhipperResult implements Iterable<Entry<String, WhipperResult.Resul
         }
     }
 
+    /**
+     * Returns file of result.
+     *
+     * @param dir directory with the file
+     * @return result file
+     */
     private static File getDumpFile(File dir){
         return new File(dir, "result.json");
     }
 
+    /**
+     * Class which holds pass/fail/skip/all result statistics. Can contain also nested
+     * results.
+     */
     public static class Result implements Iterable<Entry<String, Result>>, JSONString{
         private static final String ID = "id";
         private static final String ALL = "all";
@@ -131,6 +214,17 @@ public class WhipperResult implements Iterable<Entry<String, WhipperResult.Resul
         private final int skip;
         private final String nestedKey;
 
+        /**
+         * Creates new instance.
+         *
+         * @param id id of the result
+         * @param all all queries
+         * @param pass passed queries
+         * @param fail failed queries
+         * @param nestedKey key to use for nested results (in JSON object)
+         * @param nestedLevel nested level of this result in deeper JSON object
+         *      hierarchy (for pretty print)
+         */
         private Result(String id, int all, int pass, int fail, String nestedKey, int nestedLevel){
             this.id = id;
             this.all = all;
@@ -142,26 +236,59 @@ public class WhipperResult implements Iterable<Entry<String, WhipperResult.Resul
             nested = this.nestedKey == null ? null : new TreeMap<String, Result>();
         }
 
+        /**
+         * Returns nested result with specified key.
+         *
+         * @param key key of nested result
+         * @return nested resultor {@code null}
+         *      if result does not exist
+         */
         public Result get(String key){
             return key == null ? null : nested.get(key);
         }
 
+        /**
+         * Returns all nested keys of this result.
+         *
+         * @return nested result keys or {@code null}
+         *      if this result does not have nested results
+         */
         public Collection<String> get(){
             return nested == null ? null : nested.keySet();
         }
 
+        /**
+         * Return number of all queries.
+         *
+         * @return number of all queries
+         */
         public int getAll(){
             return all;
         }
 
+        /**
+         * Return number of passed queries.
+         *
+         * @return number of passed queries
+         */
         public int getPass(){
             return pass;
         }
 
+        /**
+         * Return number of failed queries.
+         *
+         * @return number of failed queries
+         */
         public int getFail(){
             return fail;
         }
 
+        /**
+         * Return number of skipped queries.
+         *
+         * @return number of skipped queries
+         */
         public int getSkip(){
             return skip;
         }
@@ -181,6 +308,12 @@ public class WhipperResult implements Iterable<Entry<String, WhipperResult.Resul
             }
         }
 
+        /**
+         * Writes this result in JSON format to {@link Writer}.
+         *
+         * @param w writer
+         * @param indent indent
+         */
         private void write(Writer w, int indent){
             JSONObject o = new JSONObject();
             if(id != null) {o.put(ID, id); }
@@ -192,6 +325,13 @@ public class WhipperResult implements Iterable<Entry<String, WhipperResult.Resul
             o.write(w, indent, indent * nestedLevel);
         }
 
+        /**
+         * Reads result from JSON format.
+         *
+         * @param o JSON object
+         * @param nestedLevel nested level of the result
+         * @return result read from JSON object
+         */
         private static Result fromJson(JSONObject o, int nestedLevel){
             int a = o.optInt(ALL, -1);
             int p = o.optInt(PASS, -1);

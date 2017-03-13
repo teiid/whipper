@@ -49,6 +49,12 @@ public class QuerySet implements TimeTracker{
         this.metaQuerySetResultMode = metaQuerySetResultMode;
     }
 
+    /**
+     * Sets progress monitors for this query set and all queries of this set.
+     * Including before and after.
+     *
+     * @param monitors monitors to be set.
+     */
     public void setProgressMonitors(List<ProgressMonitor> monitors){
         this.monitors.clear();
         if(monitors != null){
@@ -237,6 +243,9 @@ public class QuerySet implements TimeTracker{
         }
     }
 
+    /**
+     * Runs starting method of all monitors.
+     */
     private void runAfterMonitors(){
         for(ProgressMonitor pm : monitors){
             if(isMeta()){
@@ -247,6 +256,9 @@ public class QuerySet implements TimeTracker{
         }
     }
 
+    /**
+     * Runs ending method of all monitors.
+     */
     private void runBeforeMonitors(){
         for(ProgressMonitor pm : monitors){
             if(isMeta()){

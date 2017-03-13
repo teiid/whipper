@@ -229,9 +229,9 @@ public class WhipperPropertiesTest{
     @Test
     public void getArtifactsDirTest(){
         WhipperProperties p = new WhipperProperties();
-        Assert.assertNull("Default is null.", p.getArtifacstDir());
-        p.setArtifacstDir("a");
-        Assert.assertNotNull("Set to 'a'.", p.getArtifacstDir());
+        Assert.assertNull("Default is null.", p.getArtifactsDir());
+        p.setArtifactsDir("a");
+        Assert.assertNotNull("Set to 'a'.", p.getArtifactsDir());
     }
 
     @Test

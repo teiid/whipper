@@ -10,6 +10,10 @@ import org.whipper.Whipper;
 import org.whipper.WhipperProperties;
 import org.whipper.connection.ConnectionFactory;
 
+/**
+ * JNDI name connection strategy. Creates connection from data source
+ * with defined JNDI name.
+ */
 public class JndiNameConnectionFactory implements ConnectionFactory{
 
     private static final String JNDI_PROPERTY = "jndi.name";

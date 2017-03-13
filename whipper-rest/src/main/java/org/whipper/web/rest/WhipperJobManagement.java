@@ -25,6 +25,9 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.ResponseHeader;
 
+/**
+ * Whipper jobs REST end point.
+ */
 @Path(WhipperJobManagement.ROOT_RESOURCE_CLASS_PATH)
 @Api
 public class WhipperJobManagement{
@@ -36,6 +39,13 @@ public class WhipperJobManagement{
     @Inject
     private org.whipper.web.Context context;
 
+    /**
+     * Starts new job
+     *
+     * @param ui URI info
+     * @param props Whipper properties
+     * @return response
+     */
     @Path("start")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -49,6 +59,12 @@ public class WhipperJobManagement{
         return Response.created(ui.getBaseUriBuilder().path(ROOT_RESOURCE_CLASS_PATH).path(id).build()).build();
     }
 
+    /**
+     * Stops execution of Whipper job.
+     *
+     * @param id job ID
+     * @return response
+     */
     @Path("{id:" + WhipperJobService.ID_PATTERN_STRING + "}/stop")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -65,6 +81,12 @@ public class WhipperJobManagement{
         return Response.noContent().build();
     }
 
+    /**
+     * Retrieves result of the job.
+     *
+     * @param id job ID
+     * @return response with result
+     */
     @Path("{id:" + WhipperJobService.ID_PATTERN_STRING + "}}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -80,6 +102,12 @@ public class WhipperJobManagement{
         return Response.ok(wj.resultToJson()).build();
     }
 
+    /**
+     * Retrieves result as a ZIP.
+     *
+     * @param id job ID
+     * @return response with result
+     */
     @Path("{id:" + WhipperJobService.ID_PATTERN_STRING + "}/full")
     @GET
     @Produces("application/zip")
@@ -94,6 +122,12 @@ public class WhipperJobManagement{
         return Response.noContent().build();
     }
 
+    /**
+     * Deletes job.
+     *
+     * @param id job ID
+     * @return response
+     */
     @Path("{id:" + WhipperJobService.ID_PATTERN_STRING + "}}")
     @DELETE
     @ApiResponses(@ApiResponse(code = 204, message = "Result successfully deleted."))
@@ -103,6 +137,11 @@ public class WhipperJobManagement{
         return Response.noContent().build();
     }
 
+    /**
+     * Returns brief summary of all jobs.
+     *
+     * @return response with brief summary of all jobs.
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response allJobsBriefResults(){

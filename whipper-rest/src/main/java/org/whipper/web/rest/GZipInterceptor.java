@@ -12,6 +12,11 @@ import javax.ws.rs.ext.Provider;
 import javax.ws.rs.ext.WriterInterceptor;
 import javax.ws.rs.ext.WriterInterceptorContext;
 
+/**
+ * Interceptor, which sets encoding of the result to GZIP if client accepts it.
+ * <p>
+ * Interceptor only sets HTTP header. Actual gzipping is preformed by JAX-RS.
+ */
 @Provider
 @Priority(Priorities.HEADER_DECORATOR)
 public class GZipInterceptor implements WriterInterceptor{

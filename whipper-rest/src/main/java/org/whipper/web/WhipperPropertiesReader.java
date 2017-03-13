@@ -20,6 +20,9 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.whipper.WhipperProperties;
 
+/**
+ * Reader for reading Whipper properties in JSON fromat.
+ */
 @Provider
 @Consumes(MediaType.APPLICATION_JSON)
 public class WhipperPropertiesReader implements MessageBodyReader<WhipperProperties>{

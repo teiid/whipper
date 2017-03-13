@@ -45,7 +45,7 @@ public class Query implements TimeTracker{
      * @param resultMode result mode
      */
     public Query(Scenario scenario, Suite suite, QuerySet querySet, String id,
-            String sql, ResultMode resultMode) {
+            String sql, ResultMode resultMode){
         this.scenario = scenario;
         this.suite = suite;
         this.querySet = querySet;
@@ -54,13 +54,17 @@ public class Query implements TimeTracker{
         this.resultMode = resultMode;
     }
 
+    /**
+     * Sets progress monitors for this query.
+     *
+     * @param monitors monitors to be set.
+     */
     public void setProgressMonitors(List<ProgressMonitor> monitors){
         this.monitors.clear();
         if(monitors != null){
             this.monitors.addAll(monitors);
         }
     }
-
 
     @Override
     public long getStartTime(){
@@ -77,6 +81,11 @@ public class Query implements TimeTracker{
         return (startTime < 0 || endTime < 0) ? -1l : endTime - startTime;
     }
 
+    /**
+     * Returns result mode of this query.
+     *
+     * @return result mode
+     */
     public ResultMode getResultMode(){
         return resultMode;
     }
@@ -97,7 +106,7 @@ public class Query implements TimeTracker{
                 result.pass = false;
                 holder.buildResult(ex);
             } finally {
-                runAfterMoniors();
+                runAfterMonitors();
             }
         }
     }
@@ -156,10 +165,13 @@ public class Query implements TimeTracker{
                 result.errors = rh.getErrors();
             }
         } finally {
-            runAfterMoniors();
+            runAfterMonitors();
         }
     }
 
+    /**
+     * Runs starting method of all monitors.
+     */
     private void runBeforeMonitors(){
         for(ProgressMonitor pm : monitors){
             if(querySet.isMeta()){
@@ -170,7 +182,10 @@ public class Query implements TimeTracker{
         }
     }
 
-    private void runAfterMoniors(){
+    /**
+     * Runs ending method of all monitors.
+     */
+    private void runAfterMonitors(){
         for(ProgressMonitor pm : monitors){
             if(querySet.isMeta()){
                 pm.metaQueryFinished(this);
@@ -185,7 +200,7 @@ public class Query implements TimeTracker{
      *
      * @return actual result
      */
-    public ActualResultHolder getActualResult() {
+    public ActualResultHolder getActualResult(){
         return holder;
     }
 
@@ -194,7 +209,7 @@ public class Query implements TimeTracker{
      *
      * @return scenario
      */
-    public Scenario getScenario() {
+    public Scenario getScenario(){
         return scenario;
     }
 
@@ -203,7 +218,7 @@ public class Query implements TimeTracker{
      *
      * @return suite
      */
-    public Suite getSuite() {
+    public Suite getSuite(){
         return suite;
     }
 
@@ -212,7 +227,7 @@ public class Query implements TimeTracker{
      *
      * @return query set
      */
-    public QuerySet getQuerySet() {
+    public QuerySet getQuerySet(){
         return querySet;
     }
 
@@ -221,7 +236,7 @@ public class Query implements TimeTracker{
      *
      * @return ID
      */
-    public String getId() {
+    public String getId(){
         return id;
     }
 
@@ -230,7 +245,7 @@ public class Query implements TimeTracker{
      *
      * @return SQL query.
      */
-    public String getSql() {
+    public String getSql(){
         return sql;
     }
 
@@ -239,7 +254,7 @@ public class Query implements TimeTracker{
      *
      * @return result
      */
-    public QueryResult getResult() {
+    public QueryResult getResult(){
         return result;
     }
 
@@ -253,22 +268,21 @@ public class Query implements TimeTracker{
     }
 
     @Override
-    public String toString() {
+    public String toString(){
         return id + " - " + sql;
     }
-
 
     /**
      * Class which represents result of the query.
      */
-    public class QueryResult {
+    public class QueryResult{
 
         private boolean pass = false;
         private Throwable exception = null;
         private List<String> errors = null;
 
         @Override
-        public String toString() {
+        public String toString(){
             StringBuilder sb = new StringBuilder(querySet.getId())
                     .append(',')
                     .append(id)
@@ -306,7 +320,7 @@ public class Query implements TimeTracker{
          *
          * @return thrown exception or {@code null} if no exception has been thrown
          */
-        public Throwable getException() {
+        public Throwable getException(){
             return exception;
         }
 
@@ -333,7 +347,7 @@ public class Query implements TimeTracker{
          *
          * @return errors.
          */
-        public List<String> getErrors() {
+        public List<String> getErrors(){
             return errors;
         }
 
