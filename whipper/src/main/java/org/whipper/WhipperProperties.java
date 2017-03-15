@@ -843,7 +843,7 @@ public class WhipperProperties implements Cloneable{
      */
     public void dumpPropertiesToOutputDir(){
         File f = getOutputDir();
-        if(file == null){
+        if(f == null){
             LOG.error("Output directory not set.");
         } else if (!f.exists() && !f.mkdirs()){
             LOG.error("Cannot create output directory {}", f.getAbsolutePath());
