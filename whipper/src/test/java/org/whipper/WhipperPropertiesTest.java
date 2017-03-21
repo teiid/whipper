@@ -1,12 +1,15 @@
 package org.whipper;
 
+import java.io.File;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -258,6 +261,39 @@ public class WhipperPropertiesTest{
         Assert.assertEquals("Set to 1.", 1l, p.getTimeForOneQuery());
         p.setTimeForOneQuery("a");
         Assert.assertEquals("Unparsable.", -1l, p.getTimeForOneQuery());
+    }
+
+    @Test
+    public void getPropertyTest() {
+        WhipperProperties p = new WhipperProperties();
+        
+        p.setProperty("number", "1");
+        p.setProperty("empty", "");
+        p.setProperty("boolean", "true");
+              
+        Assert.assertEquals("String1", "1", p.getProperty("number", String.class, "0"));
+        Assert.assertEquals("String2", "", p.getProperty("empty", String.class, "0")); 
+        Assert.assertTrue("Boolean", p.getProperty("boolean", Boolean.class, false));
+        Assert.assertEquals("Byte", 1, (byte) p.getProperty("number", Byte.class, (byte) 0)); 
+        Assert.assertEquals("Short", 1, (short) p.getProperty("number", Short.class, (short) 0));
+        Assert.assertEquals("Integer", 1, (int) p.getProperty("number", Integer.class, 0));
+        Assert.assertEquals("Long", 1l, (long) p.getProperty("number", Long.class, 0l));
+        Assert.assertEquals("Float", 1.0f, (float) p.getProperty("number", Float.class, 0.0f), 0.0f);
+        Assert.assertEquals("Double", 1.0, (double) p.getProperty("number", Double.class, 0.0), 0.0);
+        Assert.assertEquals("File", new File("1"), p.getProperty("number", File.class, new File("0")));
+        Assert.assertEquals("BigDecimal", new BigDecimal("1"), p.getProperty("number", BigDecimal.class, BigDecimal.ZERO));
+        Assert.assertEquals("BigInteger", new BigInteger("1"), p.getProperty("number", BigInteger.class, new BigInteger("0")));
+        Assert.assertEquals("Pattern", "^(1)$", p.getProperty("number", Pattern.class, Pattern.compile("0")).pattern());
+    }
+
+    @Test
+    public void getPropertyDefaultTest() {
+        WhipperProperties p = new WhipperProperties();
+        
+        p.setProperty("intMax", String.valueOf(Integer.MAX_VALUE));
+        
+        Assert.assertEquals("int to byte", 0, (byte) p.getProperty("intMax", Byte.class, (byte) 0));
+        Assert.assertEquals("non-existent property", "0", p.getProperty("", String.class, "0"));
     }
 
     private void containsString(Collection<String> l1, String... l2){
