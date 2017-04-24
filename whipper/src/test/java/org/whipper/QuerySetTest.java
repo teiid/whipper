@@ -1,29 +1,27 @@
 package org.whipper;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.whipper.Query.QueryResult;
 import org.whipper.exceptions.DbNotAvailableException;
 import org.whipper.exceptions.ExecutionInterruptedException;
 import org.whipper.exceptions.ServerNotAvailableException;
 import org.whipper.resultmode.MetaQuerySetResultMode;
 
-public class QuerySetTest {
+public class QuerySetTest{
 
     private static final Map<Integer, Boolean> MAP = new HashMap<>();
     private static final AtomicInteger I = new AtomicInteger();
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void addNullQueryTest(){
-        new QuerySet("", true, null).addQuery(null);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new QuerySet("", true, null).addQuery(null));
     }
 
     @Test
@@ -32,45 +30,45 @@ public class QuerySetTest {
         qs.addQuery(getQuery(true, null));
         qs.addQuery(getQuery(true, null));
         qs.addQuery(getQuery(true, null));
-        Assert.assertEquals("Number of all queries.", 3, qs.getNumberOfAllQueries());
+        Assertions.assertEquals(3, qs.getNumberOfAllQueries(), "Number of all queries.");
         qs.runQueries();
-        Assert.assertEquals("Number of all queries.", 3, qs.getNumberOfAllQueries());
+        Assertions.assertEquals(3, qs.getNumberOfAllQueries(), "Number of all queries.");
     }
 
     @Test
     public void numberOfExecutedQueriesTest() throws Exception{
         QuerySet qs = new QuerySet("", true, null);
-        Assert.assertEquals("Number of executed queries.", 0, qs.getNumberOfExecutedQueries());
+        Assertions.assertEquals(0, qs.getNumberOfExecutedQueries(), "Number of executed queries.");
         qs.addQuery(getQuery(true, null));
         qs.addQuery(getQuery(true, null));
         qs.addQuery(getQuery(true, null));
-        Assert.assertEquals("Number of executed queries.", 0, qs.getNumberOfExecutedQueries());
+        Assertions.assertEquals(0, qs.getNumberOfExecutedQueries(), "Number of executed queries.");
         qs.runQueries();
-        Assert.assertEquals("Number of executed queries.", 3, qs.getNumberOfExecutedQueries());
+        Assertions.assertEquals(3, qs.getNumberOfExecutedQueries(), "Number of executed queries.");
     }
 
     @Test
     public void numberOfPassedQueriesTest() throws Exception{
         QuerySet qs = new QuerySet("", true, null);
-        Assert.assertEquals("Number of passed queries.", 0, qs.getNumberOfPassedQueries());
+        Assertions.assertEquals(0, qs.getNumberOfPassedQueries(), "Number of passed queries.");
         qs.addQuery(getQuery(true, null));
         qs.addQuery(getQuery(true, null));
         qs.addQuery(getQuery(true, null));
-        Assert.assertEquals("Number of passed queries.", 0, qs.getNumberOfPassedQueries());
+        Assertions.assertEquals(0, qs.getNumberOfPassedQueries(), "Number of passed queries.");
         qs.runQueries();
-        Assert.assertEquals("Number of passed queries.", 3, qs.getNumberOfPassedQueries());
+        Assertions.assertEquals(3, qs.getNumberOfPassedQueries(), "Number of passed queries.");
     }
 
     @Test
     public void numberOfFailedQueriesTest() throws Exception{
         QuerySet qs = new QuerySet("", true, null);
-        Assert.assertEquals("Number of failed queries.", 0, qs.getNumberOfFailedQueries());
+        Assertions.assertEquals(0, qs.getNumberOfFailedQueries(), "Number of failed queries.");
         qs.addQuery(getQuery(true, null));
         qs.addQuery(getQuery(true, null));
         qs.addQuery(getQuery(true, null));
-        Assert.assertEquals("Number of failed queries.", 0, qs.getNumberOfFailedQueries());
+        Assertions.assertEquals(0, qs.getNumberOfFailedQueries(), "Number of failed queries.");
         qs.runQueries();
-        Assert.assertEquals("Number of failed queries.", 0, qs.getNumberOfFailedQueries());
+        Assertions.assertEquals(0, qs.getNumberOfFailedQueries(), "Number of failed queries.");
     }
 
     @Test
@@ -84,10 +82,10 @@ public class QuerySetTest {
         qs.addQuery(q3);
 
         qs.runQueries();
-        Assert.assertEquals("Executed", 2, qs.getNumberOfExecutedQueries());
-        Assert.assertEquals("Failed", 1, qs.getNumberOfFailedQueries());
-        Assert.assertEquals("Passed", 1, qs.getNumberOfPassedQueries());
-        Assert.assertEquals("Failed queries", Arrays.asList(q2), qs.getFailedQueries());
+        Assertions.assertAll(() -> Assertions.assertEquals(2, qs.getNumberOfExecutedQueries(), "Executed"),
+                () -> Assertions.assertEquals(1, qs.getNumberOfFailedQueries(), "Failed"),
+                () -> Assertions.assertEquals(1, qs.getNumberOfPassedQueries(), "Passed"),
+                () -> Assertions.assertEquals(Collections.singletonList(q2), qs.getFailedQueries(), "Failed queries"));
         Mockito.verify(q1).run();
         Mockito.verify(q2).run();
         Mockito.verify(q3, Mockito.never()).run();
@@ -104,45 +102,45 @@ public class QuerySetTest {
         qs.addQuery(q3);
 
         qs.runQueries();
-        Assert.assertEquals("Executed", 3, qs.getNumberOfExecutedQueries());
-        Assert.assertEquals("Failed", 1, qs.getNumberOfFailedQueries());
-        Assert.assertEquals("Passed", 2, qs.getNumberOfPassedQueries());
-        Assert.assertEquals("Failed queries", Arrays.asList(q2), qs.getFailedQueries());
+        Assertions.assertAll(() -> Assertions.assertEquals(3, qs.getNumberOfExecutedQueries(), "Executed"),
+                () -> Assertions.assertEquals(1, qs.getNumberOfFailedQueries(), "Failed"),
+                () -> Assertions.assertEquals(2, qs.getNumberOfPassedQueries(), "Passed"),
+                () -> Assertions.assertEquals(Collections.singletonList(q2), qs.getFailedQueries(), "Failed queries"));
         Mockito.verify(q1).run();
         Mockito.verify(q2).run();
         Mockito.verify(q3).run();
     }
 
-    @Test(expected = ServerNotAvailableException.class)
+    @Test
     public void serverNotAvailableTest() throws Exception{
         QuerySet qs = new QuerySet("", true, null);
         qs.addQuery(getQuery(false, new ServerNotAvailableException("Thrown in test.")));
-        qs.runQueries();
+        Assertions.assertThrows(ServerNotAvailableException.class, qs::runQueries);
     }
 
-    @Test(expected = DbNotAvailableException.class)
+    @Test
     public void dbNotAvailableTest() throws Exception{
         QuerySet qs = new QuerySet("", true, null);
         qs.addQuery(getQuery(false, new DbNotAvailableException("Thrown in test.")));
-        qs.runQueries();
+        Assertions.assertThrows(DbNotAvailableException.class, qs::runQueries);
     }
 
-    @Test(expected = ExecutionInterruptedException.class)
+    @Test
     public void executionInterruptedTest() throws Exception{
         QuerySet qs = new QuerySet("", true, null);
         qs.addQuery(getQuery(true, null));
         Thread.currentThread().interrupt();
         try{
-            qs.runQueries();
+            Assertions.assertThrows(ExecutionInterruptedException.class, qs::runQueries);
         } finally {
             // clear flag
             Thread.interrupted();
         }
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void beforeFailedOnMetaTest(){
-        new QuerySet("", true, null).beforeFailed(null, null);
+        Assertions.assertThrows(IllegalStateException.class, () -> new QuerySet("", true, null).beforeFailed(null, null));
     }
 
     @Test
@@ -164,14 +162,14 @@ public class QuerySetTest {
         Mockito.verify(q3).beforeSetFailed(Mockito.same(ex), Mockito.same(type));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void setMainIdFailOnNonMetaTest(){
-        new QuerySet("", true, Mockito.mock(MetaQuerySetResultMode.class)).setMainId("");
+        Assertions.assertThrows(IllegalStateException.class, () -> new QuerySet("", true, Mockito.mock(MetaQuerySetResultMode.class)).setMainId(""));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void getMainIdFailOnNonMetaTest(){
-        new QuerySet("", true, Mockito.mock(MetaQuerySetResultMode.class)).getMainId();
+        Assertions.assertThrows(IllegalStateException.class, () -> new QuerySet("", true, Mockito.mock(MetaQuerySetResultMode.class)).getMainId());
     }
 
     @Test
@@ -179,7 +177,7 @@ public class QuerySetTest {
         QuerySet qs = new QuerySet("", true, null);
         String id = "aaa";
         qs.setMainId(id);
-        Assert.assertEquals("Main ID.", id, qs.getMainId());
+        Assertions.assertEquals(id, qs.getMainId(), "Main ID.");
     }
 
     private Query getQuery(boolean pass, Exception ex){
@@ -195,24 +193,11 @@ public class QuerySetTest {
             Mockito.doReturn(ex).when(qr).getException();
         }
         Query q = Mockito.mock(Query.class);
-        Mockito.doAnswer(new Answer<QueryResult>(){
-            @Override
-            public QueryResult answer(InvocationOnMock invocation) throws Throwable{
-                return MAP.get(i) ? qr : null;
-            }
-        }).when(q).getResult();
-        Mockito.doAnswer(new Answer<Boolean>(){
-            @Override
-            public Boolean answer(InvocationOnMock invocation) throws Throwable{
-                return MAP.get(i);
-            }
-        }).when(q).isExecuted();
-        Mockito.doAnswer(new Answer<Void>(){
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable{
-                MAP.put(i, Boolean.TRUE);
-                return null;
-            }
+        Mockito.doAnswer(invocation -> MAP.get(i) ? qr : null).when(q).getResult();
+        Mockito.doAnswer(invocation -> MAP.get(i)).when(q).isExecuted();
+        Mockito.doAnswer(invocation -> {
+            MAP.put(i, Boolean.TRUE);
+            return null;
         }).when(q).run();
         Mockito.doReturn(Mockito.mock(Scenario.class)).when(q).getScenario();
         Mockito.doReturn(Mockito.mock(Suite.class)).when(q).getSuite();

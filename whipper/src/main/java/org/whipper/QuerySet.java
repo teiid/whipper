@@ -195,7 +195,7 @@ public class QuerySet implements TimeTracker{
 
     @Override
     public long getDuration(){
-        return (startTime < 0 || endTime < 0) ? -1l : endTime - startTime;
+        return (startTime < 0 || endTime < 0) ? -1L : endTime - startTime;
     }
 
     /**

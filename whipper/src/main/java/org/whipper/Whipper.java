@@ -93,7 +93,7 @@ public class Whipper {
      * Creates new instance of Whipper.
      *
      * @param properties properties
-     * @throws IllegalArgumentException if proeprties is {@code null}.
+     * @throws IllegalArgumentException if properties is {@code null}.
      */
     public Whipper(WhipperProperties properties) throws IllegalArgumentException{
         if(properties == null){
@@ -210,7 +210,7 @@ public class Whipper {
                     } catch (WhipperException ex){
                         LOG.error("Scenario has been interrupted.", ex);
                     } catch (Exception ex){
-                        LOG.error("Uknown exception thrown.", ex);
+                        LOG.error("Unknown exception thrown.", ex);
                         throw ex;
                     } finally {
                         scen.after();
@@ -230,6 +230,9 @@ public class Whipper {
             for(ProgressMonitor pm : monitors){
                 pm.finished(result);
             }
+            for(TestResultsWriter trw : trws){
+                trw.destroy();
+            }
         }
     }
 
@@ -241,8 +244,7 @@ public class Whipper {
      */
     private List<TestResultsWriter> getResultWriters(WhipperProperties init){
         List<TestResultsWriter> out = new ArrayList<>();
-        for(Iterator<TestResultsWriter> iter = ServiceLoader.load(TestResultsWriter.class).iterator(); iter.hasNext();){
-            TestResultsWriter trw = iter.next();
+        for(TestResultsWriter trw : ServiceLoader.load(TestResultsWriter.class)){
             if(trw.init(init)){
                 out.add(trw);
             }
@@ -325,16 +327,12 @@ public class Whipper {
             } else {
                 final Pattern incl = original.getIncludeScenario();
                 final Pattern excl = original.getExcludeScenario();
-                scenarios = scen.listFiles(new FileFilter() {
-
-                    @Override
-                    public boolean accept(File pathname) {
-                        String name = pathname.getName().trim();
-                        String nameNoExt = removeExtension(name);
-                        return pathname.isFile() && name.endsWith(".properties")
-                                && incl.matcher(nameNoExt).matches()
-                                && !excl.matcher(nameNoExt).matches();
-                    }
+                scenarios = scen.listFiles(pathname -> {
+                    String name = pathname.getName().trim();
+                    String nameNoExt = removeExtension(name);
+                    return pathname.isFile() && name.endsWith(".properties")
+                            && incl.matcher(nameNoExt).matches()
+                            && !excl.matcher(nameNoExt).matches();
                 });
             }
             File f = original.getArtifactsDir();
@@ -347,20 +345,17 @@ public class Whipper {
             if(scenarios.length == 0){
                 LOG.warn("No scenarios to run [{}].", scen);
             } else {
-                Arrays.sort(scenarios, new Comparator<File>() {
-                    @Override
-                    public int compare(File o1, File o2) {
-                        if(o1 == o2){
-                            return 0;
-                        }
-                        if(o1 == null){
-                            return -1;
-                        }
-                        if(o2 == null){
-                            return 1;
-                        }
-                        return o1.getName().compareTo(o2.getName());
+                Arrays.sort(scenarios, (o1, o2) -> {
+                    if(o1 == o2){
+                        return 0;
                     }
+                    if(o1 == null){
+                        return -1;
+                    }
+                    if(o2 == null){
+                        return 1;
+                    }
+                    return o1.getName().compareTo(o2.getName());
                 });
             }
         }
@@ -420,12 +415,7 @@ public class Whipper {
                     tqd = "";
                 }
                 File testQueries = new File(artifactsDir, qsd + File.separator + tqd);
-                File[] suites = testQueries.listFiles(new FilenameFilter() {
-                    @Override
-                    public boolean accept(File dir, String name) {
-                        return name.trim().endsWith(".xml");
-                    }
-                });
+                File[] suites = testQueries.listFiles((dir, name) -> name.trim().endsWith(".xml"));
                 if(suites == null){
                     throw new IllegalArgumentException("Cannot load test queries from directory " + testQueries);
                 }
@@ -465,7 +455,7 @@ public class Whipper {
      */
     static String removeExtension(String fileName){
         int extIdx = fileName.lastIndexOf(".");
-        if(extIdx <= 0){ // ignore hidden files without extension
+        if(extIdx <= 0){ // ignore hidden files and files without extension
             return fileName;
         } else {
             return fileName.substring(0, extIdx);

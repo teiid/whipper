@@ -31,8 +31,8 @@ public class Query implements TimeTracker{
     private final ActualResultHolder holder = new ActualResultHolder();
     private final List<ProgressMonitor> monitors = new LinkedList<>();
     private QueryResult result;
-    private long startTime = -1;
-    private long endTime = -1;
+    private long startTime = -1L;
+    private long endTime = -1L;
 
     /**
      * Create a new instance.
@@ -78,7 +78,7 @@ public class Query implements TimeTracker{
 
     @Override
     public long getDuration(){
-        return (startTime < 0 || endTime < 0) ? -1l : endTime - startTime;
+        return (startTime < 0 || endTime < 0) ? -1L : endTime - startTime;
     }
 
     /**
@@ -354,7 +354,7 @@ public class Query implements TimeTracker{
         /**
          * Returns {@code Query} to which this result belongs to.
          *
-         * @return
+         * @return query
          */
         public Query getQuery(){
             return Query.this;

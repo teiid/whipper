@@ -206,7 +206,7 @@ public class DefaultTestResultsWriter implements TestResultsWriter{
     private void writeScenarioResults(FileWriter fw, Scenario scen) throws IOException{
         List<Query> failedQueries = scen.getFailedQueries();
         LOG.debug("Failed queries [{}]: {}", failedQueries.size(), failedQueries);
-        if(failedQueries == null || failedQueries.isEmpty()){
+        if(failedQueries.isEmpty()){
             return;
         }
         fw.append(LS);
@@ -300,7 +300,7 @@ public class DefaultTestResultsWriter implements TestResultsWriter{
      *      input string will be returned unchanged.
      * @return padded input string
      */
-    String pad(String str, int length){
+    static String pad(String str, int length){
         StringBuilder sb = new StringBuilder(str);
         sb.setLength(Math.max(length, sb.length()));
         return sb.toString().replace('\u0000', ' ');
@@ -312,12 +312,12 @@ public class DefaultTestResultsWriter implements TestResultsWriter{
      * @param time time in milliseconds
      * @return string representation if {@code time}
      */
-    String timeToString(long time){
+    static String timeToString(long time){
         if(time < 0){
             return Long.toString(time);
         }
         long tmp = time / 1000;
-        long milis = time - tmp * 1000;
+        long millis = time - tmp * 1000;
         time = tmp;
         tmp /= 60;
         long sec = time - tmp * 60;
@@ -337,13 +337,13 @@ public class DefaultTestResultsWriter implements TestResultsWriter{
         if(secStr.length() < 2){
             secStr = '0' + secStr;
         }
-        String milisStr = Long.toString(milis);
-        if(milisStr.length() == 1){
-            milisStr = "00" + milisStr;
-        } else if(milisStr.length() == 2){
-            milisStr = "0" + milisStr;
+        String millisStr = Long.toString(millis);
+        if(millisStr.length() == 1){
+            millisStr = "00" + millisStr;
+        } else if(millisStr.length() == 2){
+            millisStr = "0" + millisStr;
         }
-        return hoursStr + ":" + minStr + ":" + secStr + "." + milisStr;
+        return hoursStr + ":" + minStr + ":" + secStr + "." + millisStr;
     }
 
     public static File scenarioDir(File base, String id){

@@ -21,7 +21,7 @@ import org.json.JSONTokener;
 import org.whipper.WhipperProperties;
 
 /**
- * Reader for reading Whipper properties in JSON fromat.
+ * Reader for reading Whipper properties in JSON format.
  */
 @Provider
 @Consumes(MediaType.APPLICATION_JSON)

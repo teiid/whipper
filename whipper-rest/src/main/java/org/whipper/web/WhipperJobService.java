@@ -17,7 +17,7 @@ import org.json.JSONArray;
 import org.whipper.WhipperProperties;
 
 /**
- * Job service. Serve as an interface for manipulating with jobs.
+ * Job service. Serves as an interface for manipulating with jobs.
  */
 @Singleton
 @Startup
@@ -31,6 +31,7 @@ public class WhipperJobService{
     private static final int CACHE_LIMIT = 1 << 12;
     private static final String ARTIFACTS_PATH_ABSOLUTE_PROP = "artifacts.path.absolute";
     private static final String SCENARIOS_PATH_ABSOLUTE_PROP = "scenarios.path.absolute";
+    private static final String JOB_NAME = "job.name";
 
     private final TreeMap<String, WhipperJob> jobCache = new TreeMap<>();
     private int[] nextId = new int[ID_LENGTH];
@@ -49,11 +50,14 @@ public class WhipperJobService{
         props.setOutputDir(context.getResultDir(id).getAbsolutePath());
         if(!props.getProperty(ARTIFACTS_PATH_ABSOLUTE_PROP, boolean.class, false)){
             props.setArtifactsDir(context.getArtifactDir(props.getArtifactsDirStr()).getAbsolutePath());
+            props.setProperty(ARTIFACTS_PATH_ABSOLUTE_PROP, null);
         }
         if(!props.getProperty(SCENARIOS_PATH_ABSOLUTE_PROP, boolean.class, false)){
             props.setScenario(context.getScenarioDir(props.getScenarioStr()).getAbsolutePath());
+            props.setProperty(SCENARIOS_PATH_ABSOLUTE_PROP, null);
         }
-        WhipperJob wj = new WhipperJob(id, props);
+
+        WhipperJob wj = new WhipperJob(id, props.getProperty(JOB_NAME, String.class), props);
         storeJob(id, wj);
         wj.start();
         return id;
@@ -86,6 +90,7 @@ public class WhipperJobService{
         }
         WhipperJob wj = jobCache.remove(id);
         if(wj != null){
+            wj.stop();
             Utils.delete(wj.getFullPathToJob());
         }
     }

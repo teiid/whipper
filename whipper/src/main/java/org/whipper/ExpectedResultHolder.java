@@ -334,9 +334,9 @@ public class ExpectedResultHolder {
             Object ac = actual.cells.get(i);
             if(ex == null && ac == null){
                 continue;
-            } else if(ex == null && ac != null){
+            } else if(ex == null){
                 addError("Expected null but get value. " + cellId);
-            } else if(ex != null && ac == null){
+            } else if(ac == null){
                 addError("Expected value but get null." + cellId);
             } else {
                 boolean fail = false;
@@ -349,12 +349,12 @@ public class ExpectedResultHolder {
                     BigInteger acBI = (BigInteger)ac;
                     fail = exBI.compareTo(acBI) != 0;
                 } else  if(ex instanceof Float){
-                    float exF = ((Float)ex).floatValue();
-                    float acF = ((Float)ac).floatValue();
+                    float exF = (Float)ex;
+                    float acF = (Float)ac;
                     fail = (exF != acF) && (exF + allowedDivergence.floatValue() < acF || exF - allowedDivergence.floatValue() > acF);
                 } else  if(ex instanceof Double){
-                    double exD = ((Double)ex).doubleValue();
-                    double acD = ((Double)ac).doubleValue();
+                    double exD = (Double)ex;
+                    double acD = (Double)ac;
                     fail = (exD != acD) && (exD + allowedDivergence.doubleValue() < acD || exD - allowedDivergence.doubleValue() > acD);
                 }
                 if(fail){
@@ -440,10 +440,10 @@ public class ExpectedResultHolder {
             if(o1 == o2){
                 return 0;
             }
-            if(o1 == null && o2 != null){
+            if(o1 == null){
                 return -1;
             }
-            if(o1 != null && o2 == null){
+            if(o2 == null){
                 return 1;
             }
             if((o1.getClass() == o2.getClass()) && (o1 instanceof Comparable)){

@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 import java.util.TreeMap;
 
 import org.json.JSONException;
@@ -77,8 +78,9 @@ public class WhipperResult implements Iterable<Entry<String, WhipperResult.Resul
      * Returns result of the scenario.
      *
      * @param scenario scenario ID
+     *
      * @return result of specified scenario or {@code null}
-     *      if result does not exist
+     * if result does not exist
      */
     public Result get(String scenario){
         return result.get(scenario);
@@ -89,8 +91,9 @@ public class WhipperResult implements Iterable<Entry<String, WhipperResult.Resul
      *
      * @param scenario scenario ID
      * @param suite suite ID
+     *
      * @return result of specified suite or {@code null}
-     *      if result does not exist
+     * if result does not exist
      */
     public Result get(String scenario, String suite){
         Result s = get(scenario);
@@ -103,8 +106,9 @@ public class WhipperResult implements Iterable<Entry<String, WhipperResult.Resul
      * @param scenario scenario ID
      * @param suite suite ID
      * @param querySet query set ID
+     *
      * @return result of specified query set or {@code null}
-     *      if result does not exist
+     * if result does not exist
      */
     public Result get(String scenario, String suite, String querySet){
         Result s = get(scenario, suite);
@@ -118,8 +122,9 @@ public class WhipperResult implements Iterable<Entry<String, WhipperResult.Resul
      * @param suite suite ID
      * @param querySet query set ID
      * @param query query ID
+     *
      * @return result of specified query or {@code null}
-     *      if result does not exist
+     * if result does not exist
      */
     public Result get(String scenario, String suite, String querySet, String query){
         Result qs = get(scenario, suite, querySet);
@@ -157,10 +162,11 @@ public class WhipperResult implements Iterable<Entry<String, WhipperResult.Resul
      * Writes this result to {@link Writer} in JSON format.
      *
      * @param out output {@link Writer}
+     *
      * @throws IOException if an I/O error occurs
      */
     public void writeAsJson(Writer out) throws IOException{
-        result.write(out, 2);
+        result.write(out);
     }
 
     @Override
@@ -172,8 +178,9 @@ public class WhipperResult implements Iterable<Entry<String, WhipperResult.Resul
      * Loads result from file in specified directory.
      *
      * @param dir directory where file with result is located
+     *
      * @return returns result loaded from the directory or {@code null}
-     *      in case of I/O error
+     * in case of I/O error
      */
     public static WhipperResult fromDir(File dir){
         try(FileReader fr = new FileReader(getDumpFile(dir))){
@@ -189,6 +196,7 @@ public class WhipperResult implements Iterable<Entry<String, WhipperResult.Resul
      * Returns file of result.
      *
      * @param dir directory with the file
+     *
      * @return result file
      */
     private static File getDumpFile(File dir){
@@ -205,6 +213,17 @@ public class WhipperResult implements Iterable<Entry<String, WhipperResult.Resul
         private static final String PASS = "pass";
         private static final String FAIL = "fail";
         private static final String SKIP = "skip";
+        private static final Iterator<Entry<String, Result>> EMPTY_ITERATOR = new Iterator<Entry<String, Result>>(){
+            @Override
+            public boolean hasNext(){
+                return false;
+            }
+
+            @Override
+            public Entry<String, Result> next(){
+                throw new NoSuchElementException();
+            }
+        };
         private final int nestedLevel;
         private final Map<String, Result> nested;
         private final String id;
@@ -223,7 +242,7 @@ public class WhipperResult implements Iterable<Entry<String, WhipperResult.Resul
          * @param fail failed queries
          * @param nestedKey key to use for nested results (in JSON object)
          * @param nestedLevel nested level of this result in deeper JSON object
-         *      hierarchy (for pretty print)
+         * hierarchy (for pretty print)
          */
         private Result(String id, int all, int pass, int fail, String nestedKey, int nestedLevel){
             this.id = id;
@@ -233,15 +252,16 @@ public class WhipperResult implements Iterable<Entry<String, WhipperResult.Resul
             this.skip = this.all < 0 ? -1 : this.all - this.pass - this.fail;
             this.nestedKey = nestedKey;
             this.nestedLevel = nestedLevel;
-            nested = this.nestedKey == null ? null : new TreeMap<String, Result>();
+            nested = this.nestedKey == null ? null : new TreeMap<>();
         }
 
         /**
          * Returns nested result with specified key.
          *
          * @param key key of nested result
-         * @return nested resultor {@code null}
-         *      if result does not exist
+         *
+         * @return nested result or {@code null}
+         * if result does not exist
          */
         public Result get(String key){
             return key == null ? null : nested.get(key);
@@ -251,7 +271,7 @@ public class WhipperResult implements Iterable<Entry<String, WhipperResult.Resul
          * Returns all nested keys of this result.
          *
          * @return nested result keys or {@code null}
-         *      if this result does not have nested results
+         * if this result does not have nested results
          */
         public Collection<String> get(){
             return nested == null ? null : nested.keySet();
@@ -295,13 +315,13 @@ public class WhipperResult implements Iterable<Entry<String, WhipperResult.Resul
 
         @Override
         public Iterator<Entry<String, Result>> iterator(){
-            return nested == null ? null : nested.entrySet().iterator();
+            return nested == null ? EMPTY_ITERATOR : nested.entrySet().iterator();
         }
 
         @Override
         public String toJSONString(){
             try(StringWriter sw = new StringWriter()){
-                write(sw, 2);
+                write(sw);
                 return sw.toString();
             } catch (IOException ex){
                 throw new InternalError("IO exception in StringWriter " + ex.toString());
@@ -312,17 +332,28 @@ public class WhipperResult implements Iterable<Entry<String, WhipperResult.Resul
          * Writes this result in JSON format to {@link Writer}.
          *
          * @param w writer
-         * @param indent indent
          */
-        private void write(Writer w, int indent){
+        private void write(Writer w){
             JSONObject o = new JSONObject();
-            if(id != null) {o.put(ID, id); }
-            if(all >= 0){ o.put(ALL, all); }
-            if(pass >= 0){ o.put(PASS, pass); }
-            if(fail >= 0){ o.put(FAIL, fail); }
-            if(skip >= 0){ o.put(SKIP, skip); }
-            if(nested != null){ o.put(nestedKey, nested); }
-            o.write(w, indent, indent * nestedLevel);
+            if(id != null){
+                o.put(ID, id);
+            }
+            if(all >= 0){
+                o.put(ALL, all);
+            }
+            if(pass >= 0){
+                o.put(PASS, pass);
+            }
+            if(fail >= 0){
+                o.put(FAIL, fail);
+            }
+            if(skip >= 0){
+                o.put(SKIP, skip);
+            }
+            if(nested != null){
+                o.put(nestedKey, nested);
+            }
+            o.write(w, 2, 2 * nestedLevel);
         }
 
         /**
@@ -330,6 +361,7 @@ public class WhipperResult implements Iterable<Entry<String, WhipperResult.Resul
          *
          * @param o JSON object
          * @param nestedLevel nested level of the result
+         *
          * @return result read from JSON object
          */
         private static Result fromJson(JSONObject o, int nestedLevel){

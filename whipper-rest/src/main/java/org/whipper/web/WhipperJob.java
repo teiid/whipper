@@ -12,6 +12,8 @@ import java.util.TreeMap;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.whipper.ProgressMonitor;
 import org.whipper.Query;
 import org.whipper.Query.QueryResult;
@@ -27,7 +29,9 @@ import org.whipper.WhipperResult;
  */
 public class WhipperJob implements ProgressMonitor{
 
+    private static final Logger LOG = LoggerFactory.getLogger(WhipperJob.class);
     private static final String ID = "id";
+    private static final String JOB_INFO = "job-info";
     private static final String SCENARIOS = "scenarios";
     private static final String SUITES = "suites";
     private static final String QUERY_SETS = "querySets";
@@ -35,6 +39,7 @@ public class WhipperJob implements ProgressMonitor{
 
     private final String id;
     private final WhipperProperties props;
+    private final WhipperJobInfo jobInfo;
     private Whipper whipper;
     private volatile boolean finished;
 
@@ -49,12 +54,37 @@ public class WhipperJob implements ProgressMonitor{
     /**
      * Creates new job.
      *
-     * @param id is of the job
+     * @param id ID of the job
+     * @param jobName custom name of the job
      * @param props initial properties
      */
-    WhipperJob(String id, WhipperProperties props){
+    WhipperJob(String id, String jobName, WhipperProperties props){
+        this.id = id;
+        this.jobInfo = new WhipperJobInfo(jobName == null ? getDefaultJobName(id) : jobName);
+        this.props = props;
+    }
+
+    /**
+     * Creates new job.
+     *
+     * @param id job ID
+     * @param jobInfo job info
+     * @param props properties
+     */
+    private WhipperJob(String id, WhipperJobInfo jobInfo, WhipperProperties props){
         this.id = id;
         this.props = props;
+        this.jobInfo = jobInfo;
+    }
+
+    /**
+     * Returns default job name.
+     *
+     * @param id id of the job
+     * @return default job name
+     */
+    private String getDefaultJobName(String id){
+        return "Job " + id;
     }
 
     /**
@@ -70,10 +100,18 @@ public class WhipperJob implements ProgressMonitor{
      * Starts job.
      */
     public void start(){
+        File outDir = props.getOutputDir();
+        if(!outDir.exists() && !outDir.mkdirs()){
+            LOG.warn("Cannot create output directory {}", outDir);
+        } else if(!outDir.isDirectory()){
+            LOG.warn("Output directory {} is not a directory.", outDir);
+        }
         finished = false;
         whipper = new Whipper(this.props);
         whipper.registerProgressMonitor(this);
         whipper.start(true);
+        jobInfo.jobStarted();
+        jobInfo.dumpToDir(outDir);
     }
 
     /**
@@ -91,8 +129,7 @@ public class WhipperJob implements ProgressMonitor{
      * @return result as a JSON object
      */
     public synchronized JSONObject resultToJson(){
-        JSONObject o = new JSONObject();
-        o.put(ID, id);
+        JSONObject o = getJsonObject();
         JSONArray ar = new JSONArray(scenarios.values());
         o.put(SCENARIOS, ar);
         if(runningMetaQS != null){
@@ -113,13 +150,24 @@ public class WhipperJob implements ProgressMonitor{
      * @return brief summary
      */
     public synchronized JSONObject briefResultToJson(){
-        JSONObject o = new JSONObject();
-        o.put(ID, id);
+        JSONObject o = getJsonObject();
         JSONArray ar = new JSONArray();
         o.put(SCENARIOS, ar);
         for(Entry<String, Holder> e : scenarios.entrySet()){
             ar.put(e.getValue().briefSummary());
         }
+        return o;
+    }
+
+    /**
+     * Returns basic object. Contains ID and job name.
+     *
+     * @return JSON object
+     */
+    private JSONObject getJsonObject(){
+        JSONObject o = new JSONObject();
+        o.put(ID, id);
+        o.put(JOB_INFO, jobInfo.asJson());
         return o;
     }
 
@@ -181,17 +229,18 @@ public class WhipperJob implements ProgressMonitor{
     static WhipperJob fromDir(String id, File f){
         WhipperProperties wp = WhipperProperties.fromOutputDir(f);
         WhipperResult wr = WhipperResult.fromDir(f);
-        if(wp == null || wr == null){
+        WhipperJobInfo wji = WhipperJobInfo.fromDir(f);
+        if(wp == null || wr == null || wji == null){
             return null;
         }
-        WhipperJob out = new WhipperJob(id, wp);
+        WhipperJob out = new WhipperJob(id, wji, wp);
         out.finished(wr);
         return out;
     }
 
-      /******************************/
-     /*****  progress monitor  *****/
-    /******************************/
+      /* **************************** */
+     /* ****  progress monitor  **** */
+    /* **************************** */
 
     @Override
     public synchronized void starting(List<String> scenariosToRun){
@@ -225,6 +274,8 @@ public class WhipperJob implements ProgressMonitor{
             }
         }
         finished = true;
+        jobInfo.jobFinished();
+        jobInfo.dumpToDir(props.getOutputDir());
     }
 
     /**

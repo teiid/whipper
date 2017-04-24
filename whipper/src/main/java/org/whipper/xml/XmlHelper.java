@@ -178,7 +178,7 @@ public class XmlHelper {
      * @return meta-query-set with ID {@code metaId} or {@code null} if
      *      {@code metaId} is {@code null}
      * @throws IOException if {@code meta} does not contain entry with
-     *      key {@metaId}
+     *      key {@code metaId}
      */
     private static QuerySet getMeta(Map<String, QuerySet> meta, String metaId) throws IOException{
         if(metaId == null){
@@ -301,7 +301,7 @@ public class XmlHelper {
                 if(data.length() != 1){
                     throw new IOException("Invalid character length " + data.length());
                 }
-                return new Character(data.charAt(0));
+                return data.charAt(0);
             } else if(TYPE_SHORT.equalsIgnoreCase(tagName)){
                 return Short.valueOf(data);
             } else if(TYPE_BIGINTEGER.equalsIgnoreCase(tagName)){

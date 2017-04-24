@@ -3,6 +3,7 @@ package org.whipper;
 import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -11,121 +12,84 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class WhipperPropertiesTest{
 
-    @Test public void getPlaceHolderTestSimple1(){ containsString(WhipperProperties.getPlaceHolders("${e.f}"), "e.f"); }
-    @Test public void getPlaceHolderTestSimple2(){ containsString(WhipperProperties.getPlaceHolders("aa${e.f}"), "e.f"); }
-    @Test public void getPlaceHolderTestSimple3(){ containsString(WhipperProperties.getPlaceHolders("${e.f}bb"), "e.f"); }
-    @Test public void getPlaceHolderTestSimple4(){ containsString(WhipperProperties.getPlaceHolders("aa${e.f}bb"), "e.f"); }
+    @Test
+    public void getPlaceHolderTest(){
+        Assertions.assertAll("Resolved placeholders.", () -> containsString(WhipperProperties.getPlaceHolders("${e.f}"), "e.f"),
+                () -> containsString(WhipperProperties.getPlaceHolders("aa${e.f}"), "e.f"),
+                () -> containsString(WhipperProperties.getPlaceHolders("${e.f}bb"), "e.f"),
+                () -> containsString(WhipperProperties.getPlaceHolders("aa${e.f}bb"), "e.f"),
+                () -> containsString(WhipperProperties.getPlaceHolders("${}${e.f}"), "e.f"),
+                () -> containsString(WhipperProperties.getPlaceHolders("${}aa${e.f}"), "e.f"),
+                () -> containsString(WhipperProperties.getPlaceHolders("${}${e.f}bb"), "e.f"),
+                () -> containsString(WhipperProperties.getPlaceHolders("${}aa${e.f}bb"), "e.f"),
+                () -> containsString(WhipperProperties.getPlaceHolders("${e.f}${}"), "e.f"),
+                () -> containsString(WhipperProperties.getPlaceHolders("aa${e.f}${}"), "e.f"),
+                () -> containsString(WhipperProperties.getPlaceHolders("${e.f}bb${}"), "e.f"),
+                () -> containsString(WhipperProperties.getPlaceHolders("aa${e.f}bb${}"), "e.f"),
+                () -> containsString(WhipperProperties.getPlaceHolders("${e.f}${aaa}"), "e.f", "aaa"),
+                () -> containsString(WhipperProperties.getPlaceHolders("aa${e.f}${bbb}"), "e.f", "bbb"),
+                () -> containsString(WhipperProperties.getPlaceHolders("${e.f}bb${ccc}"), "e.f", "ccc"),
+                () -> containsString(WhipperProperties.getPlaceHolders("aa${e.f}bb${ddd}"), "e.f", "ddd"),
+                () -> containsString(WhipperProperties.getPlaceHolders("")),
+                () -> containsString(WhipperProperties.getPlaceHolders("${}")),
+                () -> containsString(WhipperProperties.getPlaceHolders("${}")),
+                () -> containsString(WhipperProperties.getPlaceHolders("${}bb")),
+                () -> containsString(WhipperProperties.getPlaceHolders("aa${}bb")));
+    }
 
-    @Test public void getPlaceHolderTestEmpty1(){ containsString(WhipperProperties.getPlaceHolders("${}${e.f}"), "e.f"); }
-    @Test public void getPlaceHolderTestEmpty2(){ containsString(WhipperProperties.getPlaceHolders("${}aa${e.f}"), "e.f"); }
-    @Test public void getPlaceHolderTestEmpty3(){ containsString(WhipperProperties.getPlaceHolders("${}${e.f}bb"), "e.f"); }
-    @Test public void getPlaceHolderTestEmpty4(){ containsString(WhipperProperties.getPlaceHolders("${}aa${e.f}bb"), "e.f"); }
-
-    @Test public void getPlaceHolderTestEmpty5(){ containsString(WhipperProperties.getPlaceHolders("${e.f}${}"), "e.f"); }
-    @Test public void getPlaceHolderTestEmpty6(){ containsString(WhipperProperties.getPlaceHolders("aa${e.f}${}"), "e.f"); }
-    @Test public void getPlaceHolderTestEmpty7(){ containsString(WhipperProperties.getPlaceHolders("${e.f}bb${}"), "e.f"); }
-    @Test public void getPlaceHolderTestEmpty8(){ containsString(WhipperProperties.getPlaceHolders("aa${e.f}bb${}"), "e.f"); }
-
-    @Test public void getPlaceHolderTestMultiple1(){ containsString(WhipperProperties.getPlaceHolders("${e.f}${aaa}"), "e.f", "aaa"); }
-    @Test public void getPlaceHolderTestMultiple2(){ containsString(WhipperProperties.getPlaceHolders("aa${e.f}${bbb}"), "e.f", "bbb"); }
-    @Test public void getPlaceHolderTestMultiple3(){ containsString(WhipperProperties.getPlaceHolders("${e.f}bb${ccc}"), "e.f", "ccc"); }
-    @Test public void getPlaceHolderTestMultiple4(){ containsString(WhipperProperties.getPlaceHolders("aa${e.f}bb${ddd}"), "e.f", "ddd"); }
-
-    @Test public void getPlaceHolderTestNoPH1(){ containsString(WhipperProperties.getPlaceHolders("")); }
-    @Test public void getPlaceHolderTestNoPH2(){ containsString(WhipperProperties.getPlaceHolders("${}")); }
-    @Test public void getPlaceHolderTestNoPH3(){ containsString(WhipperProperties.getPlaceHolders("${}")); }
-    @Test public void getPlaceHolderTestNoPH4(){ containsString(WhipperProperties.getPlaceHolders("${}bb")); }
-    @Test public void getPlaceHolderTestNoPH5(){ containsString(WhipperProperties.getPlaceHolders("aa${}bb")); }
-
-    @Test public void containsPlaceHolderTestNoPH1(){ Assert.assertFalse("There is no placeholder.", WhipperProperties.containsPlaceHolder("")); }
-    @Test public void containsPlaceHolderTestNoPH2(){ Assert.assertFalse("There is no placeholder.", WhipperProperties.containsPlaceHolder("")); }
-    @Test public void containsPlaceHolderTestNoPH3(){ Assert.assertFalse("There is no placeholder.", WhipperProperties.containsPlaceHolder("${}")); }
-    @Test public void containsPlaceHolderTestNoPH4(){ Assert.assertFalse("There is no placeholder.", WhipperProperties.containsPlaceHolder("${")); }
-    @Test public void containsPlaceHolderTestNoPH5(){ Assert.assertFalse("There is no placeholder.", WhipperProperties.containsPlaceHolder("}")); }
-    @Test public void containsPlaceHolderTestNoPH6(){ Assert.assertFalse("There is no placeholder.", WhipperProperties.containsPlaceHolder("aaa${")); }
-    @Test public void containsPlaceHolderTestNoPH7(){ Assert.assertFalse("There is no placeholder.", WhipperProperties.containsPlaceHolder("${aaa")); }
-    @Test public void containsPlaceHolderTestNoPH8(){ Assert.assertFalse("There is no placeholder.", WhipperProperties.containsPlaceHolder("bbb}")); }
-    @Test public void containsPlaceHolderTestNoPH9(){ Assert.assertFalse("There is no placeholder.", WhipperProperties.containsPlaceHolder("aaa${bbb")); }
-    @Test public void containsPlaceHolderTestNoPH10(){ Assert.assertFalse("There is no placeholder.", WhipperProperties.containsPlaceHolder("aaa}bbb")); }
-
-    @Test public void containsPlaceHolderTestPH1(){ Assert.assertTrue("There are placeholders.", WhipperProperties.containsPlaceHolder("${bbb ccc}")); }
-    @Test public void containsPlaceHolderTestPH2(){ Assert.assertTrue("There are placeholders.", WhipperProperties.containsPlaceHolder("${bbb}")); }
-    @Test public void containsPlaceHolderTestPH3(){ Assert.assertTrue("There are placeholders.", WhipperProperties.containsPlaceHolder("aaa${bbb}")); }
-    @Test public void containsPlaceHolderTestPH4(){ Assert.assertTrue("There are placeholders.", WhipperProperties.containsPlaceHolder("${bbb}aaa")); }
-    @Test public void containsPlaceHolderTestPH5(){ Assert.assertTrue("There are placeholders.", WhipperProperties.containsPlaceHolder("aaa${bbb}bbb")); }
+    @Test
+    public void containsPlaceHolderTest(){
+        Assertions.assertAll("There is no placeholder.", () -> Assertions.assertFalse(WhipperProperties.containsPlaceHolder("")),
+                () -> Assertions.assertFalse(WhipperProperties.containsPlaceHolder("")),
+                () -> Assertions.assertFalse(WhipperProperties.containsPlaceHolder("${}")),
+                () -> Assertions.assertFalse(WhipperProperties.containsPlaceHolder("${")),
+                () -> Assertions.assertFalse(WhipperProperties.containsPlaceHolder("}")),
+                () -> Assertions.assertFalse(WhipperProperties.containsPlaceHolder("aaa${")),
+                () -> Assertions.assertFalse(WhipperProperties.containsPlaceHolder("${aaa")),
+                () -> Assertions.assertFalse(WhipperProperties.containsPlaceHolder("bbb}")),
+                () -> Assertions.assertFalse(WhipperProperties.containsPlaceHolder("aaa${bbb")),
+                () -> Assertions.assertFalse(WhipperProperties.containsPlaceHolder("aaa}bbb")));
+        Assertions.assertAll("There are placeholders.", () -> Assertions.assertTrue(WhipperProperties.containsPlaceHolder("${bbb ccc}")),
+                () -> Assertions.assertTrue(WhipperProperties.containsPlaceHolder("${bbb}")),
+                () -> Assertions.assertTrue(WhipperProperties.containsPlaceHolder("aaa${bbb}")),
+                () -> Assertions.assertTrue(WhipperProperties.containsPlaceHolder("${bbb}aaa")),
+                () -> Assertions.assertTrue(WhipperProperties.containsPlaceHolder("aaa${bbb}bbb")));
+    }
 
     @Test
     public void resolvePlaceHoldersTestNoPH1(){
-        checkResolved(new KeyValue[]{new KeyValue("xx", "bbb"), new KeyValue("aaa", "bbb"), new KeyValue("ddd", "eee")},
-                new KeyValue[]{new KeyValue("xx", "bbb"), new KeyValue("aaa", "bbb"), new KeyValue("ddd", "eee")});
-    }
-
-    @Test
-    public void resolvePlaceHoldersTestNoPH2(){
-        checkResolved(new KeyValue[]{new KeyValue("yy", "aaa}"), new KeyValue("aaa", "${ddd"), new KeyValue("ddd", "${}")},
-                new KeyValue[]{new KeyValue("yy", "aaa}"), new KeyValue("aaa", "${ddd"), new KeyValue("ddd", "${}")});
-    }
-
-    @Test
-    public void resolvePlaceHoldersTestSimplePHOneNotResolved(){
-        checkResolved(new KeyValue[]{new KeyValue("aaa", "bbb"), new KeyValue("ddd", "${aaa}"), new KeyValue("eee", "${aa}")},
-                new KeyValue[]{new KeyValue("aaa", "bbb"), new KeyValue("ddd", "bbb"), new KeyValue("eee", "${aa}")});
-    }
-
-    @Test
-    public void resolvePlaceHoldersTestNestedPH(){
-        checkResolved(new KeyValue[]{new KeyValue("aaa", "${eee}"), new KeyValue("ddd", "${aaa}"), new KeyValue("eee", "aa")},
-                new KeyValue[]{new KeyValue("aaa", "aa"), new KeyValue("ddd", "aa"), new KeyValue("eee", "aa")});
-    }
-
-    @Test
-    public void resolvePlaceHoldersTestPHAsValueofPH1(){
-        checkResolved(new KeyValue[]{new KeyValue("aaa", "eee"), new KeyValue("ddd", "${${aaa}}"), new KeyValue("eee", "aa")},
-                new KeyValue[]{new KeyValue("aaa", "eee"), new KeyValue("ddd", "aa"), new KeyValue("eee", "aa")});
-    }
-
-    @Test
-    public void resolvePlaceHoldersTestPHAsValueofPH2(){
-        checkResolved(new KeyValue[]{new KeyValue("aaa", "eee"), new KeyValue("ddd", "${bb.${aaa}}"), new KeyValue("bb.eee", "aa")},
-                new KeyValue[]{new KeyValue("aaa", "eee"), new KeyValue("ddd", "aa"), new KeyValue("bb.eee", "aa")});
-    }
-
-    @Test
-    public void resolvePlaceHoldersTestNestedPHNotResolved(){
-        checkResolved(new KeyValue[]{new KeyValue("aaa", "${eee}"), new KeyValue("ddd", "${aaa}"), new KeyValue("eee", "${5}")},
-                new KeyValue[]{new KeyValue("aaa", "${5}"), new KeyValue("ddd", "${5}"), new KeyValue("eee", "${5}")});
-    }
-
-    @Test
-    public void resolvePlaceHoldersTestMultiPHOneUnresolved(){
-        checkResolved(new KeyValue[]{new KeyValue("aaa", "${eee}...${bbb}"), new KeyValue("bbb", "5"), new KeyValue("ee", "10")},
-                new KeyValue[]{new KeyValue("aaa", "${eee}...5"), new KeyValue("bbb", "5"), new KeyValue("ee", "10")});
-    }
-
-    @Test
-    public void resolvePlaceHoldersTestMultiPHResolved(){
-        checkResolved(new KeyValue[]{new KeyValue("aaa", "abcd.efg_${eee}blabla://${ddd.1}"), new KeyValue("ddd.1", "55"), new KeyValue("eee", "5")},
-                new KeyValue[]{new KeyValue("aaa", "abcd.efg_5blabla://55"), new KeyValue("ddd.1", "55"), new KeyValue("eee", "5")});
-    }
-
-    @Test(expected = IllegalArgumentException.class, timeout = 100)
-    public void resolvePlaceHoldersTestNestedCyclic1(){
-        checkResolved(new KeyValue[]{new KeyValue("aaa", "${eee}...${bbb}"), new KeyValue("bbb", "${ccc}"), new KeyValue("ccc", "${aaa}"), new KeyValue("eee", "5")}, null);
-    }
-
-    @Test(expected = IllegalArgumentException.class, timeout = 100)
-    public void resolvePlaceHoldersTestNestedCyclic2(){
-        checkResolved(new KeyValue[]{new KeyValue("aaa", "${eee}...${bbb}"), new KeyValue("bbb", "${ccc}"), new KeyValue("ccc", "${aaa}")}, null);
-    }
-
-    @Test(expected = IllegalArgumentException.class, timeout = 100)
-    public void resolvePlaceHoldersTestNestedCyclicDirect(){
-        checkResolved(new KeyValue[]{new KeyValue("aaa", "${aaa}")}, null);
+        Assertions.assertAll(() -> checkResolved(new KeyValue[]{new KeyValue("xx", "bbb"), new KeyValue("aaa", "bbb"), new KeyValue("ddd", "eee")},
+                new KeyValue[]{new KeyValue("xx", "bbb"), new KeyValue("aaa", "bbb"), new KeyValue("ddd", "eee")}),
+                () -> checkResolved(new KeyValue[]{new KeyValue("yy", "aaa}"), new KeyValue("aaa", "${ddd"), new KeyValue("ddd", "${}")},
+                        new KeyValue[]{new KeyValue("yy", "aaa}"), new KeyValue("aaa", "${ddd"), new KeyValue("ddd", "${}")}),
+                () -> checkResolved(new KeyValue[]{new KeyValue("aaa", "bbb"), new KeyValue("ddd", "${aaa}"), new KeyValue("eee", "${aa}")},
+                        new KeyValue[]{new KeyValue("aaa", "bbb"), new KeyValue("ddd", "bbb"), new KeyValue("eee", "${aa}")}),
+                () -> checkResolved(new KeyValue[]{new KeyValue("aaa", "${eee}"), new KeyValue("ddd", "${aaa}"), new KeyValue("eee", "aa")},
+                        new KeyValue[]{new KeyValue("aaa", "aa"), new KeyValue("ddd", "aa"), new KeyValue("eee", "aa")}),
+                () -> checkResolved(new KeyValue[]{new KeyValue("aaa", "eee"), new KeyValue("ddd", "${${aaa}}"), new KeyValue("eee", "aa")},
+                        new KeyValue[]{new KeyValue("aaa", "eee"), new KeyValue("ddd", "aa"), new KeyValue("eee", "aa")}),
+                () -> checkResolved(new KeyValue[]{new KeyValue("aaa", "eee"), new KeyValue("ddd", "${bb.${aaa}}"), new KeyValue("bb.eee", "aa")},
+                        new KeyValue[]{new KeyValue("aaa", "eee"), new KeyValue("ddd", "aa"), new KeyValue("bb.eee", "aa")}),
+                () -> checkResolved(new KeyValue[]{new KeyValue("aaa", "${eee}"), new KeyValue("ddd", "${aaa}"), new KeyValue("eee", "${5}")},
+                        new KeyValue[]{new KeyValue("aaa", "${5}"), new KeyValue("ddd", "${5}"), new KeyValue("eee", "${5}")}),
+                () -> checkResolved(new KeyValue[]{new KeyValue("aaa", "${eee}...${bbb}"), new KeyValue("bbb", "5"), new KeyValue("ee", "10")},
+                        new KeyValue[]{new KeyValue("aaa", "${eee}...5"), new KeyValue("bbb", "5"), new KeyValue("ee", "10")}),
+                () -> checkResolved(new KeyValue[]{new KeyValue("aaa", "abcd.efg_${eee}blabla://${ddd.1}"), new KeyValue("ddd.1", "55"), new KeyValue("eee", "5")},
+                        new KeyValue[]{new KeyValue("aaa", "abcd.efg_5blabla://55"), new KeyValue("ddd.1", "55"), new KeyValue("eee", "5")}),
+                () -> Assertions.assertThrows(IllegalArgumentException.class, () ->
+                        Assertions.assertTimeout(Duration.ofMillis(100),
+                                () -> checkResolved(new KeyValue[]{new KeyValue("aaa", "${eee}...${bbb}"), new KeyValue("bbb", "${ccc}"), new KeyValue("ccc", "${aaa}"), new KeyValue("eee", "5")}, null))),
+                () -> Assertions.assertThrows(IllegalArgumentException.class, () ->
+                        Assertions.assertTimeout(Duration.ofMillis(100),
+                                () -> checkResolved(new KeyValue[]{new KeyValue("aaa", "${eee}...${bbb}"), new KeyValue("bbb", "${ccc}"), new KeyValue("ccc", "${aaa}")}, null))),
+                () -> Assertions.assertThrows(IllegalArgumentException.class, () ->
+                        Assertions.assertTimeout(Duration.ofMillis(100),
+                                () -> checkResolved(new KeyValue[]{new KeyValue("aaa", "${aaa}")}, null))));
     }
 
     @Test
@@ -136,164 +100,164 @@ public class WhipperPropertiesTest{
         p.setProperty("bbb", "aaa");
         p.setProperty(WhipperProperties.Keys.CONNECTION_PROPERTY_PREFIX + "bbb", "aba");
         p.setProperty("ccc", "ddd");
-        Assert.assertEquals("Number of stored properties.", 5, p.size());
+        Assertions.assertEquals(5, p.size(), "Number of stored properties.");
         Properties acp = p.getAdditionalConnectionProperties();
-        Assert.assertTrue("Connection property 'abc' is missing.", acp.containsKey("abc"));
-        Assert.assertTrue("Connection property 'bbb' is missing.", acp.containsKey("bbb"));
-        Assert.assertEquals("Connection property abc", "cba", acp.get("abc"));
-        Assert.assertEquals("Connection propery bbb", "aba", acp.get("bbb"));
+        Assertions.assertTrue(acp.containsKey("abc"), "Connection property 'abc' is missing.");
+        Assertions.assertTrue(acp.containsKey("bbb"), "Connection property 'bbb' is missing.");
+        Assertions.assertEquals("cba", acp.get("abc"), "Connection property abc");
+        Assertions.assertEquals("aba", acp.get("bbb"), "Connection property bbb");
     }
 
     @Test
-    public void copyFromTestProps(){
+    public void copyFromPropsTest(){
         WhipperProperties p = new WhipperProperties();
         p.setProperty("aaa", "bbb");
         Properties pp = new Properties();
         pp.setProperty("a", "b");
         pp.setProperty("b", "a");
         p.copyFrom(pp);
-        Assert.assertEquals("Number of stored properties.", 2, p.size());
-        Assert.assertEquals("Property a", "b", p.getProperty("a"));
-        Assert.assertEquals("Property b", "a", p.getProperty("b"));
+        Assertions.assertAll(() -> Assertions.assertEquals(2, p.size(), "Number of stored properties."),
+                () -> Assertions.assertEquals("b", p.getProperty("a"), "Property a"),
+                () -> Assertions.assertEquals("a", p.getProperty("b"), "Property b"));
     }
 
     @Test
-    public void copyFromTestWhipperProps(){
+    public void copyFromWhipperPropsTest(){
         WhipperProperties p = new WhipperProperties();
         p.setProperty("aaa", "bbb");
         WhipperProperties pp = new WhipperProperties();
         pp.setProperty("a", "b");
         pp.setProperty("b", "a");
         p.copyFrom(pp);
-        Assert.assertEquals("Number of stored properties.", 2, p.size());
-        Assert.assertEquals("Property a", "b", p.getProperty("a"));
-        Assert.assertEquals("Property b", "a", p.getProperty("b"));
+        Assertions.assertAll(() -> Assertions.assertEquals(2, p.size(), "Number of stored properties."),
+                () -> Assertions.assertEquals("b", p.getProperty("a"), "Property a"),
+                () -> Assertions.assertEquals("a", p.getProperty("b"), "Property b"));
     }
 
     @Test
-    public void addAllTestProps(){
+    public void addAllPropsTest(){
         WhipperProperties p = new WhipperProperties();
         p.setProperty("aaa", "bbb");
         Properties pp = new Properties();
         pp.setProperty("a", "b");
         pp.setProperty("b", "a");
         p.addAll(pp);
-        Assert.assertEquals("Number of stored properties.", 3, p.size());
-        Assert.assertEquals("Property a", "b", p.getProperty("a"));
-        Assert.assertEquals("Property b", "a", p.getProperty("b"));
-        Assert.assertEquals("Property aaa", "bbb", p.getProperty("aaa"));
+        Assertions.assertAll(() -> Assertions.assertEquals(3, p.size(), "Number of stored properties."),
+                () -> Assertions.assertEquals("b", p.getProperty("a"), "Property a"),
+                () -> Assertions.assertEquals("a", p.getProperty("b"), "Property b"),
+                () -> Assertions.assertEquals("bbb", p.getProperty("aaa"), "Property aaa"));
     }
 
     @Test
-    public void addAllTestWhipperProps(){
+    public void addAllWhipperPropsTest(){
         WhipperProperties p = new WhipperProperties();
         p.setProperty("aaa", "bbb");
         WhipperProperties pp = new WhipperProperties();
         pp.setProperty("a", "b");
         pp.setProperty("b", "a");
         p.addAll(pp);
-        Assert.assertEquals("Number of stored properties.", 3, p.size());
-        Assert.assertEquals("Property a", "b", p.getProperty("a"));
-        Assert.assertEquals("Property b", "a", p.getProperty("b"));
-        Assert.assertEquals("Property aaa", "bbb", p.getProperty("aaa"));
+        Assertions.assertAll(() -> Assertions.assertEquals(3, p.size(), "Number of stored properties."),
+                () -> Assertions.assertEquals("b", p.getProperty("a"), "Property a"),
+                () -> Assertions.assertEquals("a", p.getProperty("b"), "Property b"),
+                () -> Assertions.assertEquals("bbb", p.getProperty("aaa"), "Property aaa"));
     }
 
     @Test
     public void getFastFailTest(){
         WhipperProperties p = new WhipperProperties();
-        Assert.assertTrue("Default is true.", p.getQuerySetFastFail());
+        Assertions.assertTrue(p.getQuerySetFastFail(), "Default is true.");
         p.setQuerySetFastFail("true");
-        Assert.assertTrue("Default is true.", p.getQuerySetFastFail());
+        Assertions.assertTrue(p.getQuerySetFastFail(), "Default is true.");
         p.setQuerySetFastFail("false");
-        Assert.assertFalse("Set to false.", p.getQuerySetFastFail());
+        Assertions.assertFalse(p.getQuerySetFastFail(), "Set to false.");
         p.setQuerySetFastFail("tru");
-        Assert.assertFalse("Unparsable.", p.getQuerySetFastFail());
+        Assertions.assertFalse(p.getQuerySetFastFail(), "Invalid.");
     }
 
     @Test
     public void getAllowedDivergenceTest(){
         WhipperProperties p = new WhipperProperties();
-        Assert.assertNull("Default is null.", p.getAllowedDivergence());
+        Assertions.assertNull(p.getAllowedDivergence(), "Default is null.");
         p.setAllowedDivergence("1");
-        Assert.assertNotNull("Set to 1.", p.getAllowedDivergence());
-        Assert.assertEquals("Set to 1.", 0, BigDecimal.ONE.compareTo(p.getAllowedDivergence()));
+        Assertions.assertNotNull(p.getAllowedDivergence(), "Set to 1.");
+        Assertions.assertEquals(0, BigDecimal.ONE.compareTo(p.getAllowedDivergence()), "Set to 1.");
         p.setAllowedDivergence("a");
-        Assert.assertNull("Unparsable.", p.getAllowedDivergence());
+        Assertions.assertNull(p.getAllowedDivergence(), "Invalid.");
     }
 
     @Test
     public void getOutputDirTest(){
         WhipperProperties p = new WhipperProperties();
-        Assert.assertNull("Default is null.", p.getOutputDir());
+        Assertions.assertNull(p.getOutputDir(), "Default is null.");
         p.setOutputDir("a");
-        Assert.assertNotNull("Set to 'a'.", p.getOutputDir());
+        Assertions.assertNotNull(p.getOutputDir(), "Set to 'a'.");
     }
 
     @Test
     public void getArtifactsDirTest(){
         WhipperProperties p = new WhipperProperties();
-        Assert.assertNull("Default is null.", p.getArtifactsDir());
+        Assertions.assertNull(p.getArtifactsDir(), "Default is null.");
         p.setArtifactsDir("a");
-        Assert.assertNotNull("Set to 'a'.", p.getArtifactsDir());
+        Assertions.assertNotNull(p.getArtifactsDir(), "Set to 'a'.");
     }
 
     @Test
     public void getIncludeScenarioTest(){
         WhipperProperties p = new WhipperProperties();
-        Assert.assertSame("Default is all.", WhipperProperties.ALL_PATTERN, p.getIncludeScenario());
+        Assertions.assertSame(WhipperProperties.ALL_PATTERN, p.getIncludeScenario(), "Default is all.");
         p.setIncludeScenario("a");
-        Assert.assertNotNull("Set to 'a'.", p.getIncludeScenario());
+        Assertions.assertNotNull(p.getIncludeScenario(), "Set to 'a'.");
     }
 
     @Test
     public void getExcludeScenarioTest(){
         WhipperProperties p = new WhipperProperties();
-        Assert.assertSame("Default is nothing.", WhipperProperties.NOTHING_PATTERN, p.getExcludeScenario());
+        Assertions.assertSame(WhipperProperties.NOTHING_PATTERN, p.getExcludeScenario(), "Default is nothing.");
         p.setExcludeScenario("a");
-        Assert.assertNotNull("Set to 'a'.", p.getExcludeScenario());
+        Assertions.assertNotNull(p.getExcludeScenario(), "Set to 'a'.");
     }
 
     @Test
     public void getOneQueryTimeTest(){
         WhipperProperties p = new WhipperProperties();
-        Assert.assertEquals("Default is -1.", -1l, p.getTimeForOneQuery());
+        Assertions.assertEquals(-1L, p.getTimeForOneQuery(), "Default is -1.");
         p.setTimeForOneQuery("1");
-        Assert.assertEquals("Set to 1.", 1l, p.getTimeForOneQuery());
+        Assertions.assertEquals(1L, p.getTimeForOneQuery(), "Set to 1.");
         p.setTimeForOneQuery("a");
-        Assert.assertEquals("Unparsable.", -1l, p.getTimeForOneQuery());
+        Assertions.assertEquals(-1L, p.getTimeForOneQuery(), "Invalid.");
     }
 
     @Test
-    public void getPropertyTest() {
+    public void getPropertyTest(){
         WhipperProperties p = new WhipperProperties();
-        
+
         p.setProperty("number", "1");
         p.setProperty("empty", "");
         p.setProperty("boolean", "true");
-              
-        Assert.assertEquals("String1", "1", p.getProperty("number", String.class, "0"));
-        Assert.assertEquals("String2", "", p.getProperty("empty", String.class, "0")); 
-        Assert.assertTrue("Boolean", p.getProperty("boolean", Boolean.class, false));
-        Assert.assertEquals("Byte", 1, (byte) p.getProperty("number", Byte.class, (byte) 0)); 
-        Assert.assertEquals("Short", 1, (short) p.getProperty("number", Short.class, (short) 0));
-        Assert.assertEquals("Integer", 1, (int) p.getProperty("number", Integer.class, 0));
-        Assert.assertEquals("Long", 1l, (long) p.getProperty("number", Long.class, 0l));
-        Assert.assertEquals("Float", 1.0f, (float) p.getProperty("number", Float.class, 0.0f), 0.0f);
-        Assert.assertEquals("Double", 1.0, (double) p.getProperty("number", Double.class, 0.0), 0.0);
-        Assert.assertEquals("File", new File("1"), p.getProperty("number", File.class, new File("0")));
-        Assert.assertEquals("BigDecimal", new BigDecimal("1"), p.getProperty("number", BigDecimal.class, BigDecimal.ZERO));
-        Assert.assertEquals("BigInteger", new BigInteger("1"), p.getProperty("number", BigInteger.class, new BigInteger("0")));
-        Assert.assertEquals("Pattern", "^(1)$", p.getProperty("number", Pattern.class, Pattern.compile("0")).pattern());
+
+        Assertions.assertAll(() -> Assertions.assertEquals("1", p.getProperty("number", String.class, "0"), "String1"),
+                () -> Assertions.assertEquals("", p.getProperty("empty", String.class, "0"), "String2"),
+                () -> Assertions.assertTrue(p.getProperty("boolean", Boolean.class, false), "Boolean"),
+                () -> Assertions.assertEquals(1, (byte)p.getProperty("number", Byte.class, (byte)0), "Byte"),
+                () -> Assertions.assertEquals(1, (short)p.getProperty("number", Short.class, (short)0), "Short"),
+                () -> Assertions.assertEquals(1, (int)p.getProperty("number", Integer.class, 0), "Integer"),
+                () -> Assertions.assertEquals(1L, (long)p.getProperty("number", Long.class, 0l), "Long"),
+                () -> Assertions.assertEquals(1.0f, (float)p.getProperty("number", Float.class, 0.0f), "Float"),
+                () -> Assertions.assertEquals(1.0, (double)p.getProperty("number", Double.class, 0.0), "Double"),
+                () -> Assertions.assertEquals(new File("1"), p.getProperty("number", File.class, new File("0")), "File"),
+                () -> Assertions.assertEquals(new BigDecimal("1"), p.getProperty("number", BigDecimal.class, BigDecimal.ZERO), "BigDecimal"),
+                () -> Assertions.assertEquals(new BigInteger("1"), p.getProperty("number", BigInteger.class, new BigInteger("0")), "BigInteger"),
+                () -> Assertions.assertEquals("^(1)$", p.getProperty("number", Pattern.class, Pattern.compile("0")).pattern(), "Pattern"));
     }
 
     @Test
-    public void getPropertyDefaultTest() {
+    public void getPropertyDefaultTest(){
         WhipperProperties p = new WhipperProperties();
-        
+
         p.setProperty("intMax", String.valueOf(Integer.MAX_VALUE));
-        
-        Assert.assertEquals("int to byte", 0, (byte) p.getProperty("intMax", Byte.class, (byte) 0));
-        Assert.assertEquals("non-existent property", "0", p.getProperty("", String.class, "0"));
+
+        Assertions.assertAll(() -> Assertions.assertEquals(0, (byte)p.getProperty("intMax", Byte.class, (byte)0), "int to byte"),
+                () -> Assertions.assertEquals("0", p.getProperty("", String.class, "0"), "non-existent property"));
     }
 
     private void containsString(Collection<String> l1, String... l2){
@@ -301,7 +265,7 @@ public class WhipperPropertiesTest{
         List<String> exp = new ArrayList<>(Arrays.asList(l2));
         Collections.sort(exp);
         Collections.sort(act);
-        Assert.assertEquals(exp, act);
+        Assertions.assertEquals(exp, act);
     }
 
     private void checkResolved(KeyValue[] in, KeyValue[] out){
@@ -310,10 +274,10 @@ public class WhipperPropertiesTest{
             inWP.setProperty(kv.key, kv.value);
         }
         inWP.resolvePlaceholders();
-        Assert.assertEquals("Number of resolved properties.", out.length, inWP.size());
+        Assertions.assertEquals(out.length, inWP.size(), "Number of resolved properties.");
         for(KeyValue kv : out){
-            Assert.assertNotNull(kv.key + " is not in resolved properties.", inWP.getProperty(kv.key));
-            Assert.assertEquals("Value of resolved property " + kv.key, kv.value, inWP.getProperty(kv.key));
+            Assertions.assertNotNull(inWP.getProperty(kv.key), kv.key + " is not in resolved properties.");
+            Assertions.assertEquals(kv.value, inWP.getProperty(kv.key), "Value of resolved property " + kv.key);
         }
     }
 
@@ -321,13 +285,13 @@ public class WhipperPropertiesTest{
         private String key;
         private String value;
 
-        public KeyValue(String key, String value) {
+        private KeyValue(String key, String value){
             this.key = key;
             this.value = value;
         }
 
         @Override
-        public String toString() {
+        public String toString(){
             return key + "=" + value;
         }
     }

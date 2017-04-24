@@ -1,5 +1,6 @@
 body{
   margin: 0px;
+  font-size: 20px;
 }
 button::-moz-focus-inner{
   border: 0;
@@ -16,4 +17,8 @@ a{
 }
 .actionable{
   cursor: pointer;
+}
+.actionable:hover{
+  background-color: #334d00;
+  color: white !important;
 }

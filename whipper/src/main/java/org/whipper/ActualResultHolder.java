@@ -169,9 +169,8 @@ public class ActualResultHolder {
         }
         originalException = sqlEx;
         rootCause = originalException;
-        Iterator<Throwable> iter = originalException.iterator();
-        while(iter.hasNext()){
-            rootCause = iter.next();
+        for(Throwable anOriginalException : originalException){
+            rootCause = anOriginalException;
         }
     }
 
@@ -208,10 +207,10 @@ public class ActualResultHolder {
                 for(int i = 1; i <= columnCount; i++){
                     Object o = rs.getObject(i);
                     if(o instanceof Clob){
-                        o = ((Clob) o).getSubString(1l, (int)((Clob) o).length());
+                        o = ((Clob) o).getSubString(1L, (int)((Clob) o).length());
                     } else if(o instanceof Blob){
                         Blob b = (Blob)o;
-                        o = XmlHelper.encode(b.getBytes(1l, (int)b.length()));
+                        o = XmlHelper.encode(b.getBytes(1L, (int)b.length()));
                     } else if(o instanceof SQLXML){
                         o = ((SQLXML)o).getString();
                     } else if(o instanceof byte[]){
@@ -235,7 +234,7 @@ public class ActualResultHolder {
     private byte[] toPrimitive(Byte[] in){
         byte[] out = new byte[in.length];
         for(int i = 0; i < in.length; i++){
-            out[i] = in[i].byteValue();
+            out[i] = in[i];
         }
         return out;
     }

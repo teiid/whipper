@@ -115,12 +115,12 @@ public class Scenario implements TimeTracker{
             }
         }
         if(connectionFactory == null){
-            throw new IllegalArgumentException("Unknown connection sgtrategy " + conFacName);
+            throw new IllegalArgumentException("Unknown connection strategy " + conFacName);
         }
 
         connectionFactory.init(initialProperties);
         timeForOneQuery = initialProperties.getTimeForOneQuery();
-        if(timeForOneQuery == -1l){
+        if(timeForOneQuery == -1L){
             LOG.warn("Time for one query is set to -1.");
         }
         fastFail =  initialProperties.getQuerySetFastFail();
@@ -140,7 +140,7 @@ public class Scenario implements TimeTracker{
 
     @Override
     public long getDuration(){
-        return (startTime < 0 || endTime < 0) ? -1l : endTime - startTime;
+        return (startTime < 0 || endTime < 0) ? -1L : endTime - startTime;
     }
 
     /**
@@ -336,7 +336,7 @@ public class Scenario implements TimeTracker{
     public void run() throws ServerNotAvailableException, DbNotAvailableException,
                 MaxTimeExceededException, ExecutionInterruptedException{
         LOG.info("Starting scenario {}.", id);
-        long maxEndTime = timeForOneQuery < 0 ? -1l : timeForOneQuery * getNumberOfAllQueries() + System.currentTimeMillis();
+        long maxEndTime = timeForOneQuery < 0 ? -1L : timeForOneQuery * getNumberOfAllQueries() + System.currentTimeMillis();
         startTime = System.currentTimeMillis();
         try{
             Collections.sort(suites);
@@ -403,7 +403,7 @@ public class Scenario implements TimeTracker{
             fw = new FileWriter(file, true);
             fw.append("------------------------------");
             fw.append(System.lineSeparator());
-            fw.append(id + " - " + DateFormat.getDateTimeInstance().format(new java.util.Date(System.currentTimeMillis())));
+            fw.append(id).append(" - ").append(DateFormat.getDateTimeInstance().format(new java.util.Date(System.currentTimeMillis())));
             fw.append(System.lineSeparator());
             sqlEx.printStackTrace(new PrintWriter(fw));
         } catch (IOException ex){

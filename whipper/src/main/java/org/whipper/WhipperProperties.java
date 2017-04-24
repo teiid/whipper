@@ -30,29 +30,28 @@ public class WhipperProperties implements Cloneable{
     /**
      * Keys.
      */
-    public static interface Keys{
-        public static final String CONNECTION_PROPERTY_PREFIX = "whipper.connection.property.";
-
-        public static final String CONNECTION_STRATEGY = "whipper.connection.strategy";
-        public static final String TIME_FOR_ONE_QUERY = "whipper.scenario.time.for.one.query";
-        public static final String PING_QUERY = "whipper.scenario.ping.query";
-        public static final String URL = "url";
-        public static final String DRIVER_CLASS = "jdbc.driver";
-        public static final String SCENARIO = "scenario.file";
-        public static final String INCLUDE_SCENARIOS = "whipper.scenario.include";
-        public static final String EXCLUDE_SCENARIOS = "whipper.scenario.exclude";
-        public static final String INCLUDE_SUITES = "whipper.suite.include";
-        public static final String EXCLUDE_SUITES = "whipper.suite.exclude";
-        public static final String ARTIFACTS_DIR = "queryset.artifacts.dir";
-        public static final String OUTPUT_DIR = "output.dir";
-        public static final String RESULT_MODE = "result.mode";
-        public static final String ALLOWED_DIVERGENCE = "allowed.divergence";
-        public static final String QUERYSET_DIR = "queryset.dirname";
-        public static final String EXPECTED_RESULTS_DIR = "expected.results.dirname";
-        public static final String TEST_QUERIES_DIR = "test.queries.dirname";
-        public static final String VALID_CONNECTION_SQL = "whipper.scenario.valid.connection.sql";
-        public static final String AFTER_QUERY = "whipper.scenario.after.query";
-        public static final String QUERY_SET_FAST_FAIL = "whipper.scenario.fastfail";
+    public interface Keys{
+        String CONNECTION_PROPERTY_PREFIX = "whipper.connection.property.";
+        String CONNECTION_STRATEGY = "whipper.connection.strategy";
+        String TIME_FOR_ONE_QUERY = "whipper.scenario.time.for.one.query";
+        String PING_QUERY = "whipper.scenario.ping.query";
+        String URL = "url";
+        String DRIVER_CLASS = "jdbc.driver";
+        String SCENARIO = "scenario.file";
+        String INCLUDE_SCENARIOS = "whipper.scenario.include";
+        String EXCLUDE_SCENARIOS = "whipper.scenario.exclude";
+        String INCLUDE_SUITES = "whipper.suite.include";
+        String EXCLUDE_SUITES = "whipper.suite.exclude";
+        String ARTIFACTS_DIR = "queryset.artifacts.dir";
+        String OUTPUT_DIR = "output.dir";
+        String RESULT_MODE = "result.mode";
+        String ALLOWED_DIVERGENCE = "allowed.divergence";
+        String QUERYSET_DIR = "queryset.dirname";
+        String EXPECTED_RESULTS_DIR = "expected.results.dirname";
+        String TEST_QUERIES_DIR = "test.queries.dirname";
+        String VALID_CONNECTION_SQL = "whipper.scenario.valid.connection.sql";
+        String AFTER_QUERY = "whipper.scenario.after.query";
+        String QUERY_SET_FAST_FAIL = "whipper.scenario.fastfail";
     }
 
     private final Properties props;
@@ -112,7 +111,7 @@ public class WhipperProperties implements Cloneable{
 
     /**
      * Returns this properties as a JSON object.
-     * @return
+     * @return JSON representation of this object
      */
     public JSONObject asJson(){
         return new JSONObject(props);
@@ -280,7 +279,7 @@ public class WhipperProperties implements Cloneable{
      * @return
      */
     public long getTimeForOneQuery(){
-        return getProperty(Keys.TIME_FOR_ONE_QUERY, long.class, -1l);
+        return getProperty(Keys.TIME_FOR_ONE_QUERY, long.class, -1L);
     }
 
     /**
@@ -752,7 +751,7 @@ public class WhipperProperties implements Cloneable{
                 if(containsPlaceHolder(value)){
                     Set<String> phs = getPlaceHolders(value);
                     if(phs.contains(e.getKey().toString())){ // contains itself
-                        throw new IllegalArgumentException("Recurcive placeholders: " + props);
+                        throw new IllegalArgumentException("Recursive placeholders: " + props);
                     }
                     for(String ph : phs){
                         Object toReplace = resolved.get(ph);
@@ -761,7 +760,7 @@ public class WhipperProperties implements Cloneable{
                             if(LOG.isTraceEnabled()){
                                 LOG.trace("Replacing '{}' with '{}'.", ph, replacement);
                             }
-                            e.setValue(value.replace("${" + ph + "}", replacement.toString()));
+                            e.setValue(value.replace("${" + ph + "}", replacement));
                             changed = true;
                         }
                     }

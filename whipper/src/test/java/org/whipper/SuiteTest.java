@@ -2,52 +2,50 @@ package org.whipper;
 
 import java.util.Arrays;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.whipper.Query.QueryResult;
-import org.whipper.QuerySet;
-import org.whipper.Suite;
 import org.whipper.exceptions.DbNotAvailableException;
 import org.whipper.exceptions.ExecutionInterruptedException;
 import org.whipper.exceptions.MaxTimeExceededException;
 import org.whipper.exceptions.ServerNotAvailableException;
 
-public class SuiteTest {
+public class SuiteTest{
 
-    @Test(expected = ServerNotAvailableException.class)
+    @Test
     public void serverNotAvailableTest() throws Exception{
         Suite s = new Suite("");
         s.addQuerySet(getQuerySet(2, 1, 2, 1, ServerNotAvailableException.class));
-        s.run(-1);
+        Assertions.assertThrows(ServerNotAvailableException.class, () -> s.run(-1));
     }
 
-    @Test(expected = DbNotAvailableException.class)
+    @Test
     public void dbNotAvailableTest() throws Exception{
         Suite s = new Suite("");
         s.addQuerySet(getQuerySet(2, 1, 2, 1, DbNotAvailableException.class));
-        s.run(-1);
+        Assertions.assertThrows(DbNotAvailableException.class, () -> s.run(-1));
     }
 
-    @Test(expected = ExecutionInterruptedException.class)
+    @Test
     public void executionInterruptedTest() throws Exception{
         Suite s = new Suite("");
         s.addQuerySet(getQuerySet(2, 1, 2, 1, ExecutionInterruptedException.class));
-        s.run(-1);
+        Assertions.assertThrows(ExecutionInterruptedException.class, () -> s.run(-1));
     }
 
-    @Test(expected = MaxTimeExceededException.class)
+    @Test
     public void maxTimeExceededTest1() throws Exception{
         Suite s = new Suite("");
         s.addQuerySet(getQuerySet(2, 0, 2, 2, null));
-        s.run(1000);
+        Assertions.assertThrows(MaxTimeExceededException.class, () -> s.run(1000));
     }
 
-    @Test(expected = MaxTimeExceededException.class)
+    @Test
     public void maxTimeExceededTest2() throws Exception{
         Suite s = new Suite("");
         s.addQuerySet(getQuerySet(2, 0, 2, 2, null));
-        s.run(System.currentTimeMillis());
+        Assertions.assertThrows(MaxTimeExceededException.class, () -> s.run(System.currentTimeMillis()));
     }
 
     @Test
@@ -57,7 +55,7 @@ public class SuiteTest {
         s.addQuerySet(getQuerySet(3, 1, 2, 1, null));
         s.addQuerySet(getQuerySet(1, 0, 0, 0, null));
 
-        Assert.assertEquals("All", 6, s.getNumberOfAllQueries());
+        Assertions.assertEquals(6, s.getNumberOfAllQueries(), "All");
     }
 
     @Test
@@ -67,7 +65,7 @@ public class SuiteTest {
         s.addQuerySet(getQuerySet(3, 1, 2, 1, null));
         s.addQuerySet(getQuerySet(1, 0, 0, 0, null));
 
-        Assert.assertEquals("Executed", 4, s.getNumberOfExecutedQueries());
+        Assertions.assertEquals(4, s.getNumberOfExecutedQueries(), "Executed");
     }
 
     @Test
@@ -77,7 +75,7 @@ public class SuiteTest {
         s.addQuerySet(getQuerySet(3, 1, 2, 1, null));
         s.addQuerySet(getQuerySet(1, 0, 0, 0, null));
 
-        Assert.assertEquals("Passed", 3, s.getNumberOfPassedQueries());
+        Assertions.assertEquals(3, s.getNumberOfPassedQueries(), "Passed");
     }
 
     @Test
@@ -87,7 +85,7 @@ public class SuiteTest {
         s.addQuerySet(getQuerySet(3, 1, 2, 1, null));
         s.addQuerySet(getQuerySet(1, 0, 0, 0, null));
 
-        Assert.assertEquals("Failed", 1, s.getNumberOfFailedQueries());
+        Assertions.assertEquals(1, s.getNumberOfFailedQueries(), "Failed");
     }
 
     @Test
@@ -148,8 +146,9 @@ public class SuiteTest {
         s.setBeforeEach(getQuerySet(1, 1, 1, 0, ServerNotAvailableException.class));
         try{
             s.run(-1);
-            Assert.fail("No exception thrown.");
-        } catch (ServerNotAvailableException ex){}
+            Assertions.fail("No exception thrown.");
+        } catch (ServerNotAvailableException ex){
+        }
         Mockito.verify(q, Mockito.never()).runQueries();
     }
 
@@ -161,8 +160,9 @@ public class SuiteTest {
         s.setBeforeEach(getQuerySet(1, 1, 1, 0, ExecutionInterruptedException.class));
         try{
             s.run(-1);
-            Assert.fail("No exception thrown.");
-        } catch (ExecutionInterruptedException ex){}
+            Assertions.fail("No exception thrown.");
+        } catch (ExecutionInterruptedException ex){
+        }
         Mockito.verify(q, Mockito.never()).runQueries();
     }
 
@@ -174,8 +174,9 @@ public class SuiteTest {
         s.setBeforeEach(getQuerySet(1, 1, 1, 0, DbNotAvailableException.class));
         try{
             s.run(-1);
-            Assert.fail("No exception thrown.");
-        } catch (DbNotAvailableException ex){}
+            Assertions.fail("No exception thrown.");
+        } catch (DbNotAvailableException ex){
+        }
         Mockito.verify(q, Mockito.never()).runQueries();
     }
 
@@ -187,8 +188,9 @@ public class SuiteTest {
         s.setAfterEach(getQuerySet(1, 1, 1, 0, ServerNotAvailableException.class));
         try{
             s.run(-1);
-            Assert.fail("No exception thrown.");
-        } catch (ServerNotAvailableException ex){}
+            Assertions.fail("No exception thrown.");
+        } catch (ServerNotAvailableException ex){
+        }
         Mockito.verify(q).runQueries();
         Mockito.verify(q, Mockito.never()).beforeFailed(Mockito.any(Throwable.class), Mockito.anyString());
     }
@@ -201,8 +203,9 @@ public class SuiteTest {
         s.setAfterEach(getQuerySet(1, 1, 1, 0, ExecutionInterruptedException.class));
         try{
             s.run(-1);
-            Assert.fail("No exception thrown.");
-        } catch (ExecutionInterruptedException ex){}
+            Assertions.fail("No exception thrown.");
+        } catch (ExecutionInterruptedException ex){
+        }
         Mockito.verify(q).runQueries();
         Mockito.verify(q, Mockito.never()).beforeFailed(Mockito.any(Throwable.class), Mockito.anyString());
     }
@@ -215,8 +218,9 @@ public class SuiteTest {
         s.setAfterEach(getQuerySet(1, 1, 1, 0, DbNotAvailableException.class));
         try{
             s.run(-1);
-            Assert.fail("No exception thrown.");
-        } catch (DbNotAvailableException ex){}
+            Assertions.fail("No exception thrown.");
+        } catch (DbNotAvailableException ex){
+        }
         Mockito.verify(q).runQueries();
         Mockito.verify(q, Mockito.never()).beforeFailed(Mockito.any(Throwable.class), Mockito.anyString());
     }
@@ -270,8 +274,9 @@ public class SuiteTest {
         s.setAfterEach(after);
         try{
             s.run(1);
-            Assert.fail("No exception thrown.");
-        } catch (MaxTimeExceededException ex){}
+            Assertions.fail("No exception thrown.");
+        } catch (MaxTimeExceededException ex){
+        }
         Mockito.verify(before).runQueries();
         Mockito.verify(qs).runQueries();
         Mockito.verify(after).runQueries();

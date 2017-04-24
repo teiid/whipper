@@ -9,46 +9,45 @@ import java.sql.SQLWarning;
 import java.sql.SQLXML;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.apache.commons.codec.binary.Base64;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class ActualResultHolderTest {
+public class ActualResultHolderTest{
 
     private ActualResultHolder holder;
 
-    @Before
+    @BeforeEach
     public void newInstance(){
         holder = new ActualResultHolder();
     }
 
     @Test
     public void emptyHandlerTest(){
-        Assert.assertFalse("Is exception.", holder.isException());
-        Assert.assertFalse("Is result.", holder.isResult());
-        Assert.assertFalse("Is update.", holder.isUpdate());
-
-        Assert.assertNull("Handler is an exception [labels].", holder.getColumnLabels());
-        Assert.assertNull("Handler is an exception [types].", holder.getColumnTypeNames());
-        Assert.assertNull("Handler is an exception [rows].", holder.getRows());
-        Assert.assertEquals("Update count.", -1, holder.getUpdateCount());
-
-        Assert.assertNull("Original exception.", holder.getOriginalException());
-        Assert.assertNull("Original exception class.", holder.getOriginalExceptionClass());
-        Assert.assertNull("Original exception message.", holder.getOriginalExceptionMessage());
-        Assert.assertNull("Root cause exception.", holder.getRootCauseException());
-        Assert.assertNull("Root cause exception class.", holder.getRootCauseExceptionClass());
-        Assert.assertNull("Root cause exception message.", holder.getRootCauseExceptionMessage());
+        Assertions.assertAll(() -> Assertions.assertFalse(holder.isException(), "Is exception."),
+                () -> Assertions.assertFalse(holder.isResult(), "Is result."),
+                () -> Assertions.assertFalse(holder.isUpdate(), "Is update."),
+                () -> Assertions.assertNull(holder.getColumnLabels(), "Handler is an exception [labels]."),
+                () -> Assertions.assertNull(holder.getColumnTypeNames(), "Handler is an exception [types]."),
+                () -> Assertions.assertNull(holder.getRows(), "Handler is an exception [rows]."),
+                () -> Assertions.assertEquals(-1, holder.getUpdateCount(), "Update count."),
+                () -> Assertions.assertNull(holder.getOriginalException(), "Original exception."),
+                () -> Assertions.assertNull(holder.getOriginalExceptionClass(), "Original exception class."),
+                () -> Assertions.assertNull(holder.getOriginalExceptionMessage(), "Original exception message."),
+                () -> Assertions.assertNull(holder.getRootCauseException(), "Root cause exception."),
+                () -> Assertions.assertNull(holder.getRootCauseExceptionClass(), "Root cause exception class."),
+                () -> Assertions.assertNull(holder.getRootCauseExceptionMessage(), "Root cause exception message."));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void buildExceptionTestNull(){
-        holder.buildResult((SQLException)null);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> holder.buildResult((SQLException)null));
     }
 
     @Test
@@ -61,33 +60,32 @@ public class ActualResultHolderTest {
         SQLWarning ex5 = new SQLWarning("Message 5", ex4);
         holder.buildResult(ex5);
 
-        Assert.assertTrue("Is exception.", holder.isException());
-        Assert.assertFalse("Is result.", holder.isResult());
-        Assert.assertFalse("Is update.", holder.isUpdate());
-
-        Assert.assertNull("Labels.", holder.getColumnLabels());
-        Assert.assertNull("Types.", holder.getColumnTypeNames());
-        Assert.assertNull("Rows.", holder.getRows());
-        Assert.assertEquals("Update count.", -1, holder.getUpdateCount());
-
-        Assert.assertSame("Original exception.", ex5, holder.getOriginalException());
-        Assert.assertEquals("Original exception class.", SQLWarning.class, holder.getOriginalExceptionClass());
-        Assert.assertEquals("Original exception message.", ex5.getMessage(), holder.getOriginalExceptionMessage());
-        Assert.assertSame("Root cause exception.", root, holder.getRootCauseException());
-        Assert.assertEquals("Root cause exception class.", Exception.class, holder.getRootCauseExceptionClass());
-        Assert.assertEquals("Root cause exception message.", root.getMessage(), holder.getRootCauseExceptionMessage());
+        Assertions.assertAll(() -> Assertions.assertTrue(holder.isException(), "Is exception."),
+                () -> Assertions.assertFalse(holder.isResult(), "Is result."),
+                () -> Assertions.assertFalse(holder.isUpdate(), "Is update."),
+                () -> Assertions.assertNull(holder.getColumnLabels(), "Labels."),
+                () -> Assertions.assertNull(holder.getColumnTypeNames(), "Types."),
+                () -> Assertions.assertNull(holder.getRows(), "Rows."),
+                () -> Assertions.assertEquals(-1, holder.getUpdateCount(), "Update count."),
+                () -> Assertions.assertSame(ex5, holder.getOriginalException(), "Original exception."),
+                () -> Assertions.assertEquals(SQLWarning.class, holder.getOriginalExceptionClass(), "Original exception class."),
+                () -> Assertions.assertEquals(ex5.getMessage(), holder.getOriginalExceptionMessage(), "Original exception message."),
+                () -> Assertions.assertSame(root, holder.getRootCauseException(), "Root cause exception."),
+                () -> Assertions.assertEquals(Exception.class, holder.getRootCauseExceptionClass(), "Root cause exception class."),
+                () -> Assertions.assertEquals(root.getMessage(), holder.getRootCauseExceptionMessage(), "Root cause exception message."))
+        ;
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void buildStatementNullTest() throws SQLException{
-        holder.buildResult((Statement)null);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> holder.buildResult((Statement)null));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void buildStatementClosedTest() throws SQLException{
         Statement s = Mockito.mock(Statement.class);
         Mockito.doReturn(Boolean.TRUE).when(s).isClosed();
-        holder.buildResult(s);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> holder.buildResult(s));
     }
 
     @Test
@@ -100,22 +98,19 @@ public class ActualResultHolderTest {
 
         holder.buildResult(s);
 
-        Assert.assertFalse("Is exception.", holder.isException());
-        Assert.assertFalse("Is result.", holder.isResult());
-        Assert.assertTrue("Is update.", holder.isUpdate());
-
-        Assert.assertNull("Labels.", holder.getColumnLabels());
-        Assert.assertNull("Types.", holder.getColumnTypeNames());
-        Assert.assertNull("Rows.", holder.getRows());
-
-        Assert.assertNull("Original exception.", holder.getOriginalException());
-        Assert.assertNull("Original exception class.", holder.getOriginalExceptionClass());
-        Assert.assertNull("Original exception message.", holder.getOriginalExceptionMessage());
-        Assert.assertNull("Root cause exception.", holder.getRootCauseException());
-        Assert.assertNull("Root cause exception class.", holder.getRootCauseExceptionClass());
-        Assert.assertNull("Root cause exception message.", holder.getRootCauseExceptionMessage());
-
-        Assert.assertEquals("Update count.", updCount, holder.getUpdateCount());
+        Assertions.assertAll(() -> Assertions.assertFalse(holder.isException(), "Is exception."),
+                () -> Assertions.assertFalse(holder.isResult(), "Is result."),
+                () -> Assertions.assertTrue(holder.isUpdate(), "Is update."),
+                () -> Assertions.assertNull(holder.getColumnLabels(), "Labels."),
+                () -> Assertions.assertNull(holder.getColumnTypeNames(), "Types."),
+                () -> Assertions.assertNull(holder.getRows(), "Rows."),
+                () -> Assertions.assertNull(holder.getOriginalException(), "Original exception."),
+                () -> Assertions.assertNull(holder.getOriginalExceptionClass(), "Original exception class."),
+                () -> Assertions.assertNull(holder.getOriginalExceptionMessage(), "Original exception message."),
+                () -> Assertions.assertNull(holder.getRootCauseException(), "Root cause exception."),
+                () -> Assertions.assertNull(holder.getRootCauseExceptionClass(), "Root cause exception class."),
+                () -> Assertions.assertNull(holder.getRootCauseExceptionMessage(), "Root cause exception message."),
+                () -> Assertions.assertEquals(updCount, holder.getUpdateCount(), "Update count."));
     }
 
     @Test
@@ -140,23 +135,19 @@ public class ActualResultHolderTest {
 
         holder.buildResult(s);
 
-        Assert.assertFalse("Is exception.", holder.isException());
-        Assert.assertTrue("Is result.", holder.isResult());
-        Assert.assertFalse("Is update.", holder.isUpdate());
-
-        Assert.assertEquals("Labels.", Arrays.asList("label1"), holder.getColumnLabels());
-        Assert.assertEquals("Types.", Arrays.asList("type1"), holder.getColumnTypeNames());
-        Assert.assertEquals("Rows.", Arrays.asList(), holder.getRows());
-
-        Assert.assertEquals("Update count.", -1, holder.getUpdateCount());
-
-        Assert.assertNull("Original exception.", holder.getOriginalException());
-        Assert.assertNull("Original exception class.", holder.getOriginalExceptionClass());
-        Assert.assertNull("Original exception message.", holder.getOriginalExceptionMessage());
-        Assert.assertNull("Root cause exception.", holder.getRootCauseException());
-        Assert.assertNull("Root cause exception class.", holder.getRootCauseExceptionClass());
-        Assert.assertNull("Root cause exception message.", holder.getRootCauseExceptionMessage());
-
+        Assertions.assertAll(() -> Assertions.assertFalse(holder.isException(), "Is exception."),
+                () -> Assertions.assertTrue(holder.isResult(), "Is result."),
+                () -> Assertions.assertFalse(holder.isUpdate(), "Is update."),
+                () -> Assertions.assertEquals(Collections.singletonList("label1"), holder.getColumnLabels(), "Labels."),
+                () -> Assertions.assertEquals(Collections.singletonList("type1"), holder.getColumnTypeNames(), "Types."),
+                () -> Assertions.assertEquals(Collections.emptyList(), holder.getRows(), "Rows."),
+                () -> Assertions.assertEquals(-1, holder.getUpdateCount(), "Update count."),
+                () -> Assertions.assertNull(holder.getOriginalException(), "Original exception."),
+                () -> Assertions.assertNull(holder.getOriginalExceptionClass(), "Original exception class."),
+                () -> Assertions.assertNull(holder.getOriginalExceptionMessage(), "Original exception message."),
+                () -> Assertions.assertNull(holder.getRootCauseException(), "Root cause exception."),
+                () -> Assertions.assertNull(holder.getRootCauseExceptionClass(), "Root cause exception class."),
+                () -> Assertions.assertNull(holder.getRootCauseExceptionMessage(), "Root cause exception message."));
     }
 
     @Test
@@ -187,12 +178,12 @@ public class ActualResultHolderTest {
         byte[] arBytePrim = new byte[]{11, 21, 31, 41, 51, 61, 71, 81, 91, 101};
 
         Blob blob = Mockito.mock(Blob.class);
-        Mockito.doReturn(10l).when(blob).length();
-        Mockito.doReturn(arBlob).when(blob).getBytes(Mockito.eq(1l), Mockito.eq(10));
+        Mockito.doReturn(10L).when(blob).length();
+        Mockito.doReturn(arBlob).when(blob).getBytes(Mockito.eq(1L), Mockito.eq(10));
         Clob clob = Mockito.mock(Clob.class);
-        Mockito.doReturn(10l).when(clob).length();
+        Mockito.doReturn(10L).when(clob).length();
         String clobValue = "0123456789";
-        Mockito.doReturn(clobValue).when(clob).getSubString(Mockito.eq(1l), Mockito.eq(10));
+        Mockito.doReturn(clobValue).when(clob).getSubString(Mockito.eq(1L), Mockito.eq(10));
         SQLXML xml = Mockito.mock(SQLXML.class);
         String xmlValue = "<a>b</a>";
         Mockito.doReturn(xmlValue).when(xml).getString();
@@ -216,25 +207,22 @@ public class ActualResultHolderTest {
 
         holder.buildResult(s);
 
-        Assert.assertFalse("Is exception.", holder.isException());
-        Assert.assertTrue("Is result.", holder.isResult());
-        Assert.assertFalse("Is update.", holder.isUpdate());
-
-        Assert.assertEquals("Labels.", Arrays.asList("label1", "label2", "label3", "label4", "label5", "label6", "label7"), holder.getColumnLabels());
-        Assert.assertEquals("Types.", Arrays.asList("type1", "type2", "type3", "type4", "type5", "type6", "type7"), holder.getColumnTypeNames());
-        Assert.assertEquals("Rows.", Arrays.asList(Arrays.asList(
-                Base64.encodeBase64String(arBlob), clobValue, xmlValue,
-                Base64.encodeBase64String(arB), Base64.encodeBase64String(arBytePrim),
-                50, null)), holder.getRows());
-
-        Assert.assertEquals("Update count.", -1, holder.getUpdateCount());
-
-        Assert.assertNull("Original exception.", holder.getOriginalException());
-        Assert.assertNull("Original exception class.", holder.getOriginalExceptionClass());
-        Assert.assertNull("Original exception message.", holder.getOriginalExceptionMessage());
-        Assert.assertNull("Root cause exception.", holder.getRootCauseException());
-        Assert.assertNull("Root cause exception class.", holder.getRootCauseExceptionClass());
-        Assert.assertNull("Root cause exception message.", holder.getRootCauseExceptionMessage());
+        Assertions.assertAll(() -> Assertions.assertFalse(holder.isException(), "Is exception."),
+                () -> Assertions.assertTrue(holder.isResult(), "Is result."),
+                () -> Assertions.assertFalse(holder.isUpdate(), "Is update."),
+                () -> Assertions.assertEquals(Arrays.asList("label1", "label2", "label3", "label4", "label5", "label6", "label7"), holder.getColumnLabels(), "Labels."),
+                () -> Assertions.assertEquals(Arrays.asList("type1", "type2", "type3", "type4", "type5", "type6", "type7"), holder.getColumnTypeNames(), "Types."),
+                () -> Assertions.assertEquals(Collections.singletonList(Arrays.asList(
+                        Base64.encodeBase64String(arBlob), clobValue, xmlValue,
+                        Base64.encodeBase64String(arB), Base64.encodeBase64String(arBytePrim),
+                        50, null)), holder.getRows(), "Rows."),
+                () -> Assertions.assertEquals(-1, holder.getUpdateCount(), "Update count."),
+                () -> Assertions.assertNull(holder.getOriginalException(), "Original exception."),
+                () -> Assertions.assertNull(holder.getOriginalExceptionClass(), "Original exception class."),
+                () -> Assertions.assertNull(holder.getOriginalExceptionMessage(), "Original exception message."),
+                () -> Assertions.assertNull(holder.getRootCauseException(), "Root cause exception."),
+                () -> Assertions.assertNull(holder.getRootCauseExceptionClass(), "Root cause exception class."),
+                () -> Assertions.assertNull(holder.getRootCauseExceptionMessage(), "Root cause exception message."));
     }
 
     @Test
@@ -246,21 +234,28 @@ public class ActualResultHolderTest {
         Mockito.doReturn(updCount).when(s).getUpdateCount();
 
         holder.buildResult(s);
-        Assert.assertFalse("Is exception.", holder.isException());
-        Assert.assertFalse("Is result.", holder.isResult());
-        Assert.assertFalse("Is update.", holder.isUpdate());
-        Assert.assertTrue("Is no-result.", holder.isNoResult());
+        Assertions.assertAll(() -> Assertions.assertFalse(holder.isException(), "Is exception."),
+                () -> Assertions.assertFalse(holder.isResult(), "Is result."),
+                () -> Assertions.assertFalse(holder.isUpdate(), "Is update."),
+                () -> Assertions.assertTrue(holder.isNoResult(), "Is no-result."));
     }
 
     private class IntGtMaxLe0 extends BaseMatcher<Integer>{
         private int max;
-        private IntGtMaxLe0(int max) {
+
+        private IntGtMaxLe0(int max){
             this.max = max;
         }
-        @Override public boolean matches(Object item) {
-            int i = ((Integer)item).intValue();
+
+        @Override
+        public boolean matches(Object item){
+            int i = (Integer)item;
             return i > max || i <= 0;
         }
-        @Override public void describeTo(Description description) { description.appendText("gt " + max + " or le 0"); }
+
+        @Override
+        public void describeTo(Description description){
+            description.appendText("gt " + max + " or le 0");
+        }
     }
 }

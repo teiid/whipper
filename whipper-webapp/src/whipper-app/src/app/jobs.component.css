@@ -1,0 +1,12 @@
+.jobResult{
+  background-color: #A9A9F5;
+  padding: 10px;
+}
+.jobDetailsButton{
+  border-style: none;
+  padding: 10px 40px;
+  font: inherit;
+}
+.jobSummary{
+  margin-left: 20px;
+}

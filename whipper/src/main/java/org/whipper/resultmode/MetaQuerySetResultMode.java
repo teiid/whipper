@@ -3,6 +3,7 @@ package org.whipper.resultmode;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +61,7 @@ public class MetaQuerySetResultMode implements ResultMode{
     public ResultHolder handleResult(Query q){
         ResultHolder out = new ResultHolder();
         if(q.getActualResult().isException()){
-            out.setErrors(Arrays.asList("Before-set query failed - " + q.getActualResult().getOriginalExceptionMessage()));
+            out.setErrors(Collections.singletonList("Before-set query failed - " + q.getActualResult().getOriginalExceptionMessage()));
             File errorFileXml = getErrorFile(q, q.getQuerySet().getMainId());
             try{
                 // TODO add information about main query set

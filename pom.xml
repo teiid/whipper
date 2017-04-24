@@ -21,7 +21,8 @@
         <war.base.name>${project.artifactId}</war.base.name>
         <slf4j.version>1.7.12</slf4j.version>
         <log4j.version>2.3</log4j.version>
-        <junit.version>4.12</junit.version>
+        <junit.jupiter.version>5.0.0-M4</junit.jupiter.version>
+        <junit.platform.version>1.0.0-M4</junit.platform.version>
         <mockito.version>1.10.19</mockito.version>
         <json.version>20160810</json.version>
         <wildfly.swarm.version>2016.12.1</wildfly.swarm.version>
@@ -29,7 +30,8 @@
         <jar.plugin.version>2.6</jar.plugin.version>
         <dependency.plugin.version>2.10</dependency.plugin.version>
         <maven.war.plugin.version>2.6</maven.war.plugin.version>
-        <java.version>1.7</java.version>
+        <maven.surefire.plugin.version>2.19.1</maven.surefire.plugin.version>
+        <java.version>1.8</java.version>
     </properties>
     <modules>
         <module>whipper</module>
@@ -78,9 +80,9 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${junit.version}</version>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>${junit.jupiter.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -179,6 +181,19 @@
                         <packagingExcludes>%regex[.*log4j.*]</packagingExcludes>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven.surefire.plugin.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.junit.platform</groupId>
+                            <artifactId>junit-platform-surefire-provider</artifactId>
+                            <version>${junit.platform.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+
             </plugins>
         </pluginManagement>
         <plugins>

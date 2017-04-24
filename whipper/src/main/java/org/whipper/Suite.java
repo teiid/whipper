@@ -77,7 +77,7 @@ public class Suite implements Comparable<Suite>, TimeTracker{
 
     @Override
     public long getDuration(){
-        return (startTime < 0 || endTime < 0) ? -1l : endTime - startTime;
+        return (startTime < 0 || endTime < 0) ? -1L : endTime - startTime;
     }
 
     /**
@@ -283,7 +283,7 @@ public class Suite implements Comparable<Suite>, TimeTracker{
                 return qs.getFailedQueries().get(0).getResult().getException();
             }
             if(qs.getNumberOfAllQueries() != qs.getNumberOfExecutedQueries()){
-                return new IllegalStateException("Some meta-qery-set queries has not run - " + type);
+                return new IllegalStateException("Some meta-query-set queries has not run - " + type);
             }
         }
         return null;

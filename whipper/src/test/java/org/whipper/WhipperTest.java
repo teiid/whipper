@@ -1,14 +1,17 @@
 package org.whipper;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class WhipperTest {
+public class WhipperTest{
 
-    @Test public void removeExtensionTestNoExtension(){ Assert.assertEquals(Whipper.removeExtension("file"), "file"); }
-    @Test public void removeExtensionTestSimple(){ Assert.assertEquals(Whipper.removeExtension("file.txt"), "file"); }
-    @Test public void removeExtensionTestWithDot(){ Assert.assertEquals(Whipper.removeExtension("file.1.txt"), "file.1"); }
-    @Test public void removeExtensionTestHiddenNoExtension(){ Assert.assertEquals(Whipper.removeExtension(".file"), ".file"); }
-    @Test public void removeExtensionTestHiddenSimple(){ Assert.assertEquals(Whipper.removeExtension(".file.txt"), ".file"); }
-    @Test public void removeExtensionTestHiddenWithDot(){ Assert.assertEquals(Whipper.removeExtension(".file.1.txt"), ".file.1"); }
+    @Test
+    public void removeExtensionTest(){
+        Assertions.assertAll("Remove extension", () -> Assertions.assertEquals("file", Whipper.removeExtension("file")),
+                () -> Assertions.assertEquals("file", Whipper.removeExtension("file.txt")),
+                () -> Assertions.assertEquals("file.1", Whipper.removeExtension("file.1.txt")),
+                () -> Assertions.assertEquals(".file", Whipper.removeExtension(".file")),
+                () -> Assertions.assertEquals(".file", Whipper.removeExtension(".file.txt")),
+                () -> Assertions.assertEquals(".file.1", Whipper.removeExtension(".file.1.txt")));
+    }
 }

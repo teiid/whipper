@@ -18,10 +18,8 @@ export class JobsComponent implements OnInit {
   constructor(private wrs: WhipperRestService) {}
 
   getJobs(): void{
-    console.log("getting jobs");
     this.wrs.getJobs().then(
       j => {
-        console.log("result", j);
         this.jobs = j;
         this.jobsSelection = new Array(this.jobs.length);
         this.jobsSelection.fill(false);
@@ -30,7 +28,6 @@ export class JobsComponent implements OnInit {
   }
 
   ngOnInit() {
-    console.log("init");
     this.getJobs();
   }
 

@@ -6,123 +6,114 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Arrays;
+import java.util.Collections;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.whipper.ActualResultHolder;
-import org.whipper.Query;
-import org.whipper.QuerySet;
-import org.whipper.Scenario;
-import org.whipper.Suite;
 import org.whipper.Query.QueryResult;
 import org.whipper.exceptions.DbNotAvailableException;
 import org.whipper.exceptions.ServerNotAvailableException;
 import org.whipper.resultmode.ResultHolder;
 import org.whipper.resultmode.ResultMode;
 
-public class QueryTest {
+public class QueryTest{
 
     private static int count = 1;
 
     @Test
     public void runQueryTestTableOK() throws SQLException{
         Query q = getQuery(getEmptyTable(), getResultHandler(false, false, false, null, null), true);
-        Assert.assertFalse("Query has not been executed yet.", q.isExecuted());
+        Assertions.assertFalse(q.isExecuted(), "Query has not been executed yet.");
         q.run();
-        Assert.assertTrue("Query has been already executed.", q.isExecuted());
+        Assertions.assertTrue(q.isExecuted(), "Query has been already executed.");
         QueryResult qr = q.getResult();
-        Assert.assertSame("Query from QueryResult.", q, qr.getQuery());
+        Assertions.assertSame(q, qr.getQuery(), "Query from QueryResult.");
 
         ActualResultHolder arh = q.getActualResult();
-        Assert.assertTrue("Is result.", arh.isResult());
-        Assert.assertFalse("Is update.", arh.isUpdate());
-        Assert.assertFalse("Is exception.", arh.isException());
-        Assert.assertEquals("Types", Arrays.asList("type1"), arh.getColumnTypeNames());
-        Assert.assertEquals("Lables", Arrays.asList("label1"), arh.getColumnLabels());
-        Assert.assertEquals("Rows", Arrays.asList(), arh.getRows());
-
-        Assert.assertTrue("Query result - is pass", qr.pass());
-        Assert.assertFalse("Query result - is error", qr.isError());
-        Assert.assertFalse("Query result - is exception", qr.isException());
-        Assert.assertNull("Query result - exception", qr.getException());
-        Assert.assertNull("Query result - errors", qr.getErrors());
+        Assertions.assertAll(() -> Assertions.assertTrue(arh.isResult(), "Is result."),
+                () -> Assertions.assertFalse(arh.isUpdate(), "Is update."),
+                () -> Assertions.assertFalse(arh.isException(), "Is exception."),
+                () -> Assertions.assertEquals(Collections.singletonList("type1"), arh.getColumnTypeNames(), "Types"),
+                () -> Assertions.assertEquals(Collections.singletonList("label1"), arh.getColumnLabels(), "Labels"),
+                () -> Assertions.assertEquals(Collections.emptyList(), arh.getRows(), "Rows"),
+                () -> Assertions.assertTrue(qr.pass(), "Query result - is pass"),
+                () -> Assertions.assertFalse(qr.isError(), "Query result - is error"),
+                () -> Assertions.assertFalse(qr.isException(), "Query result - is exception"),
+                () -> Assertions.assertNull(qr.getException(), "Query result - exception"),
+                () -> Assertions.assertNull(qr.getErrors(), "Query result - errors"));
     }
 
     @Test
     public void runQueryTestTableFail() throws SQLException{
         String err = "compare error";
         Query q = getQuery(getEmptyTable(), getResultHandler(true, true, false, null, err), true);
-        Assert.assertFalse("Query has not been executed yet.", q.isExecuted());
+        Assertions.assertFalse(q.isExecuted(), "Query has not been executed yet.");
         q.run();
-        Assert.assertTrue("Query has been already executed.", q.isExecuted());
+        Assertions.assertTrue(q.isExecuted(), "Query has been already executed.");
         QueryResult qr = q.getResult();
-        Assert.assertSame("Query from QueryResult.", q, qr.getQuery());
+        Assertions.assertSame(q, qr.getQuery(), "Query from QueryResult.");
 
         ActualResultHolder arh = q.getActualResult();
-        Assert.assertTrue("Is result.", arh.isResult());
-        Assert.assertFalse("Is update.", arh.isUpdate());
-        Assert.assertFalse("Is exception.", arh.isException());
-        Assert.assertEquals("Types", Arrays.asList("type1"), arh.getColumnTypeNames());
-        Assert.assertEquals("Lables", Arrays.asList("label1"), arh.getColumnLabels());
-        Assert.assertEquals("Rows", Arrays.asList(), arh.getRows());
-
-        Assert.assertFalse("Query result - is pass", qr.pass());
-        Assert.assertTrue("Query result - is error", qr.isError());
-        Assert.assertFalse("Query result - is exception", qr.isException());
-        Assert.assertNull("Query result - exception", qr.getException());
-        Assert.assertEquals("Query result - errors", Arrays.asList(err), qr.getErrors());
+        Assertions.assertAll(() -> Assertions.assertTrue(arh.isResult(), "Is result."),
+                () -> Assertions.assertFalse(arh.isUpdate(), "Is update."),
+                () -> Assertions.assertFalse(arh.isException(), "Is exception."),
+                () -> Assertions.assertEquals(Collections.singletonList("type1"), arh.getColumnTypeNames(), "Types"),
+                () -> Assertions.assertEquals(Collections.singletonList("label1"), arh.getColumnLabels(), "Labels"),
+                () -> Assertions.assertEquals(Collections.emptyList(), arh.getRows(), "Rows"),
+                () -> Assertions.assertFalse(qr.pass(), "Query result - is pass"),
+                () -> Assertions.assertTrue(qr.isError(), "Query result - is error"),
+                () -> Assertions.assertFalse(qr.isException(), "Query result - is exception"),
+                () -> Assertions.assertNull(qr.getException(), "Query result - exception"),
+                () -> Assertions.assertEquals(Collections.singletonList(err), qr.getErrors(), "Query result - errors"));
     }
 
     @Test
     public void runQueryTestTableErrorHandlingResult() throws SQLException{
         IOException ex = new IOException();
         Query q = getQuery(getEmptyTable(), getResultHandler(true, false, true, ex, null), true);
-        Assert.assertFalse("Query has not been executed yet.", q.isExecuted());
+        Assertions.assertFalse(q.isExecuted(), "Query has not been executed yet.");
         q.run();
-        Assert.assertTrue("Query has been already executed.", q.isExecuted());
+        Assertions.assertTrue(q.isExecuted(), "Query has been already executed.");
         QueryResult qr = q.getResult();
-        Assert.assertSame("Query from QueryResult.", q, qr.getQuery());
+        Assertions.assertSame(q, qr.getQuery(), "Query from QueryResult.");
 
         ActualResultHolder arh = q.getActualResult();
-        Assert.assertTrue("Is result.", arh.isResult());
-        Assert.assertFalse("Is update.", arh.isUpdate());
-        Assert.assertFalse("Is exception.", arh.isException());
-        Assert.assertEquals("Types", Arrays.asList("type1"), arh.getColumnTypeNames());
-        Assert.assertEquals("Lables", Arrays.asList("label1"), arh.getColumnLabels());
-        Assert.assertEquals("Rows", Arrays.asList(), arh.getRows());
-
-        Assert.assertFalse("Query result - is pass", qr.pass());
-        Assert.assertFalse("Query result - is error", qr.isError());
-        Assert.assertTrue("Query result - is exception", qr.isException());
-        Assert.assertSame("Query result - exception", ex, qr.getException());
-        Assert.assertNull("Query result - errors", qr.getErrors());
+        Assertions.assertAll(() -> Assertions.assertTrue(arh.isResult(), "Is result."),
+                () -> Assertions.assertFalse(arh.isUpdate(), "Is update."),
+                () -> Assertions.assertFalse(arh.isException(), "Is exception."),
+                () -> Assertions.assertEquals(Collections.singletonList("type1"), arh.getColumnTypeNames(), "Types"),
+                () -> Assertions.assertEquals(Collections.singletonList("label1"), arh.getColumnLabels(), "Labels"),
+                () -> Assertions.assertEquals(Collections.emptyList(), arh.getRows(), "Rows"),
+                () -> Assertions.assertFalse(qr.pass(), "Query result - is pass"),
+                () -> Assertions.assertFalse(qr.isError(), "Query result - is error"),
+                () -> Assertions.assertTrue(qr.isException(), "Query result - is exception"),
+                () -> Assertions.assertSame(ex, qr.getException(), "Query result - exception"),
+                () -> Assertions.assertNull(qr.getErrors(), "Query result - errors"));
     }
 
     @Test
     public void runQueryTestExceptionExpected() throws SQLException{
         SQLException ex = new SQLException("ex", "00");
         Query q = getQuery(getException(ex), getResultHandler(false, false, false, null, null), true);
-        Assert.assertFalse("Query has not been executed yet.", q.isExecuted());
+        Assertions.assertFalse(q.isExecuted(), "Query has not been executed yet.");
         q.run();
-        Assert.assertTrue("Query has been already executed.", q.isExecuted());
+        Assertions.assertTrue(q.isExecuted(), "Query has been already executed.");
         QueryResult qr = q.getResult();
-        Assert.assertSame("Query from QueryResult.", q, qr.getQuery());
+        Assertions.assertSame(q, qr.getQuery(), "Query from QueryResult.");
 
         ActualResultHolder arh = q.getActualResult();
-        Assert.assertFalse("Is result.", arh.isResult());
-        Assert.assertFalse("Is update.", arh.isUpdate());
-        Assert.assertTrue("Is exception.", arh.isException());
-        Assert.assertNull("Types", arh.getColumnTypeNames());
-        Assert.assertNull("Lables", arh.getColumnLabels());
-        Assert.assertNull("Rows", arh.getRows());
-
-        Assert.assertTrue("Query result - is pass", qr.pass());
-        Assert.assertFalse("Query result - is error", qr.isError());
-        Assert.assertTrue("Query result - is exception", qr.isException());
-        Assert.assertSame("Query result - exception", ex, qr.getException());
-        Assert.assertNull("Query result - errors", qr.getErrors());
+        Assertions.assertAll(() -> Assertions.assertFalse(arh.isResult(), "Is result."),
+                () -> Assertions.assertFalse(arh.isUpdate(), "Is update."),
+                () -> Assertions.assertTrue(arh.isException(), "Is exception."),
+                () -> Assertions.assertNull(arh.getColumnTypeNames(), "Types"),
+                () -> Assertions.assertNull(arh.getColumnLabels(), "Labels"),
+                () -> Assertions.assertNull(arh.getRows(), "Rows"),
+                () -> Assertions.assertTrue(qr.pass(), "Query result - is pass"),
+                () -> Assertions.assertFalse(qr.isError(), "Query result - is error"),
+                () -> Assertions.assertTrue(qr.isException(), "Query result - is exception"),
+                () -> Assertions.assertSame(ex, qr.getException(), "Query result - exception"),
+                () -> Assertions.assertNull(qr.getErrors(), "Query result - errors"));
     }
 
     @Test
@@ -130,25 +121,24 @@ public class QueryTest {
         SQLException ex = new SQLException("ex", "00");
         String err = "compare error";
         Query q = getQuery(getException(ex), getResultHandler(true, true, false, null, err), true);
-        Assert.assertFalse("Query has not been executed yet.", q.isExecuted());
+        Assertions.assertFalse(q.isExecuted(), "Query has not been executed yet.");
         q.run();
-        Assert.assertTrue("Query has been already executed.", q.isExecuted());
+        Assertions.assertTrue(q.isExecuted(), "Query has been already executed.");
         QueryResult qr = q.getResult();
-        Assert.assertSame("Query from QueryResult.", q, qr.getQuery());
+        Assertions.assertSame(q, qr.getQuery(), "Query from QueryResult.");
 
         ActualResultHolder arh = q.getActualResult();
-        Assert.assertFalse("Is result.", arh.isResult());
-        Assert.assertFalse("Is update.", arh.isUpdate());
-        Assert.assertTrue("Is exception.", arh.isException());
-        Assert.assertNull("Types", arh.getColumnTypeNames());
-        Assert.assertNull("Lables", arh.getColumnLabels());
-        Assert.assertNull("Rows", arh.getRows());
-
-        Assert.assertFalse("Query result - is pass", qr.pass());
-        Assert.assertTrue("Query result - is error", qr.isError());
-        Assert.assertTrue("Query result - is exception", qr.isException());
-        Assert.assertSame("Query result - exception", ex, qr.getException());
-        Assert.assertEquals("Query result - errors", Arrays.asList(err), qr.getErrors());
+        Assertions.assertAll(() -> Assertions.assertFalse(arh.isResult(), "Is result."),
+                () -> Assertions.assertFalse(arh.isUpdate(), "Is update."),
+                () -> Assertions.assertTrue(arh.isException(), "Is exception."),
+                () -> Assertions.assertNull(arh.getColumnTypeNames(), "Types"),
+                () -> Assertions.assertNull(arh.getColumnLabels(), "Labels"),
+                () -> Assertions.assertNull(arh.getRows(), "Rows"),
+                () -> Assertions.assertFalse(qr.pass(), "Query result - is pass"),
+                () -> Assertions.assertTrue(qr.isError(), "Query result - is error"),
+                () -> Assertions.assertTrue(qr.isException(), "Query result - is exception"),
+                () -> Assertions.assertSame(ex, qr.getException(), "Query result - exception"),
+                () -> Assertions.assertEquals(Collections.singletonList(err), qr.getErrors(), "Query result - errors"));
     }
 
     @Test
@@ -156,26 +146,25 @@ public class QueryTest {
         SQLException ex = new SQLException("ex", "00");
         DbNotAvailableException exDb = new DbNotAvailableException("Thrown in test.");
         Query q = getQuery(getException(ex), getResultHandler(true, false, true, exDb, null), false);
-        Assert.assertFalse("Query has not been executed yet.", q.isExecuted());
+        Assertions.assertFalse(q.isExecuted(), "Query has not been executed yet.");
         q.run();
-        Assert.assertTrue("Query has been already executed.", q.isExecuted());
+        Assertions.assertTrue(q.isExecuted(), "Query has been already executed.");
         QueryResult qr = q.getResult();
-        Assert.assertSame("Query from QueryResult.", q, qr.getQuery());
+        Assertions.assertSame(q, qr.getQuery(), "Query from QueryResult.");
 
         ActualResultHolder arh = q.getActualResult();
-        Assert.assertFalse("Is result.", arh.isResult());
-        Assert.assertFalse("Is update.", arh.isUpdate());
-        Assert.assertTrue("Is exception.", arh.isException());
-        Assert.assertNull("Types", arh.getColumnTypeNames());
-        Assert.assertNull("Lables", arh.getColumnLabels());
-        Assert.assertNull("Rows", arh.getRows());
-
-        Assert.assertFalse("Query result - is pass", qr.pass());
-        Assert.assertFalse("Query result - is error", qr.isError());
-        Assert.assertTrue("Query result - is exception", qr.isException());
-        Assert.assertNotNull("Query result - exception", qr.getException());
-        Assert.assertSame("Query result - exception", exDb.getClass(), qr.getException().getClass());
-        Assert.assertNull("Query result - errors", qr.getErrors());
+        Assertions.assertAll(() -> Assertions.assertFalse(arh.isResult(), "Is result."),
+                () -> Assertions.assertFalse(arh.isUpdate(), "Is update."),
+                () -> Assertions.assertTrue(arh.isException(), "Is exception."),
+                () -> Assertions.assertNull(arh.getColumnTypeNames(), "Types"),
+                () -> Assertions.assertNull(arh.getColumnLabels(), "Labels"),
+                () -> Assertions.assertNull(arh.getRows(), "Rows"),
+                () -> Assertions.assertFalse(qr.pass(), "Query result - is pass"),
+                () -> Assertions.assertFalse(qr.isError(), "Query result - is error"),
+                () -> Assertions.assertTrue(qr.isException(), "Query result - is exception"),
+                () -> Assertions.assertNotNull(qr.getException(), "Query result - exception"),
+                () -> Assertions.assertSame(exDb.getClass(), qr.getException().getClass(), "Query result - exception"),
+                () -> Assertions.assertNull(qr.getErrors(), "Query result - errors"));
     }
 
     @Test
@@ -183,26 +172,25 @@ public class QueryTest {
         SQLException ex = new SQLException("ex", "08");
         ServerNotAvailableException exSrv = new ServerNotAvailableException("Thrown in test.");
         Query q = getQuery(getException(ex), getResultHandler(true, false, true, exSrv, null), false);
-        Assert.assertFalse("Query has not been executed yet.", q.isExecuted());
+        Assertions.assertFalse(q.isExecuted(), "Query has not been executed yet.");
         q.run();
-        Assert.assertTrue("Query has been already executed.", q.isExecuted());
+        Assertions.assertTrue(q.isExecuted(), "Query has been already executed.");
         QueryResult qr = q.getResult();
-        Assert.assertSame("Query from QueryResult.", q, qr.getQuery());
+        Assertions.assertSame(q, qr.getQuery(), "Query from QueryResult.");
 
         ActualResultHolder arh = q.getActualResult();
-        Assert.assertFalse("Is result.", arh.isResult());
-        Assert.assertFalse("Is update.", arh.isUpdate());
-        Assert.assertTrue("Is exception.", arh.isException());
-        Assert.assertNull("Types", arh.getColumnTypeNames());
-        Assert.assertNull("Lables", arh.getColumnLabels());
-        Assert.assertNull("Rows", arh.getRows());
-
-        Assert.assertFalse("Query result - is pass", qr.pass());
-        Assert.assertFalse("Query result - is error", qr.isError());
-        Assert.assertTrue("Query result - is exception", qr.isException());
-        Assert.assertNotNull("Query result - exception", qr.getException());
-        Assert.assertSame("Query result - exception", exSrv.getClass(), qr.getException().getClass());
-        Assert.assertNull("Query result - errors", qr.getErrors());
+        Assertions.assertAll(() -> Assertions.assertFalse(arh.isResult(), "Is result."),
+                () -> Assertions.assertFalse(arh.isUpdate(), "Is update."),
+                () -> Assertions.assertTrue(arh.isException(), "Is exception."),
+                () -> Assertions.assertNull(arh.getColumnTypeNames(), "Types"),
+                () -> Assertions.assertNull(arh.getColumnLabels(), "Labels"),
+                () -> Assertions.assertNull(arh.getRows(), "Rows"),
+                () -> Assertions.assertFalse(qr.pass(), "Query result - is pass"),
+                () -> Assertions.assertFalse(qr.isError(), "Query result - is error"),
+                () -> Assertions.assertTrue(qr.isException(), "Query result - is exception"),
+                () -> Assertions.assertNotNull(qr.getException(), "Query result - exception"),
+                () -> Assertions.assertSame(exSrv.getClass(), qr.getException().getClass(), "Query result - exception"),
+                () -> Assertions.assertNull(qr.getErrors(), "Query result - errors"));
     }
 
     private Query getQuery(Connection con, ResultHolder rh, boolean valid){
@@ -225,9 +213,9 @@ public class QueryTest {
         Mockito.doReturn(exception).when(rh).isException();
         Mockito.doReturn(ex).when(rh).getException();
         if(err == null){
-            Mockito.doReturn(Arrays.asList()).when(rh).getErrors();
+            Mockito.doReturn(Collections.emptyList()).when(rh).getErrors();
         } else {
-            Mockito.doReturn(Arrays.asList(err)).when(rh).getErrors();
+            Mockito.doReturn(Collections.singletonList(err)).when(rh).getErrors();
         }
         return rh;
     }

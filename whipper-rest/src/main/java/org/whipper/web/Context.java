@@ -16,7 +16,7 @@ public class Context{
     /**
      * Directories on file system.
      */
-    private static enum Directory{
+    private enum Directory{
         BASE_DIR(new File(System.getProperty("user.home"), "whipper-web-ui")),
         RESULTS_DIR(new File(BASE_DIR.f, "results")),
         ARTIFACTS_DIR(new File(BASE_DIR.f, "artifacts")),
@@ -25,7 +25,7 @@ public class Context{
 
         private final File f;
 
-        private Directory(File f){
+        Directory(File f){
             this.f = f;
         }
     }
