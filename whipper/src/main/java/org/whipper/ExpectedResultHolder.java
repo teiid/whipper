@@ -340,26 +340,31 @@ public class ExpectedResultHolder {
                 addError("Expected value but get null." + cellId);
             } else {
                 boolean fail = false;
+                boolean compared = false;
                 if(ex instanceof BigDecimal){
                     BigDecimal exBD = (BigDecimal)ex;
                     BigDecimal acBD = (BigDecimal)ac;
                     fail = exBD.compareTo(acBD) != 0 && (exBD.add(allowedDivergence).compareTo(acBD) < 0 || exBD.subtract(allowedDivergence).compareTo(acBD) > 0);
-                } else  if(ex instanceof BigInteger){
+                    compared = true;
+                } else if(ex instanceof BigInteger){
                     BigInteger exBI = (BigInteger)ex;
                     BigInteger acBI = (BigInteger)ac;
                     fail = exBI.compareTo(acBI) != 0;
-                } else  if(ex instanceof Float){
+                    compared = true;
+                } else if(ex instanceof Float){
                     float exF = (Float)ex;
                     float acF = (Float)ac;
                     fail = (exF != acF) && (exF + allowedDivergence.floatValue() < acF || exF - allowedDivergence.floatValue() > acF);
-                } else  if(ex instanceof Double){
+                    compared = true;
+                } else if(ex instanceof Double){
                     double exD = (Double)ex;
                     double acD = (Double)ac;
                     fail = (exD != acD) && (exD + allowedDivergence.doubleValue() < acD || exD - allowedDivergence.doubleValue() > acD);
+                    compared = true;
                 }
                 if(fail){
                     addError("Actual and expected value are different. Actual: [" + ac + "], expected: [" + ex + "]. " + cellId);
-                } else {
+                } else if(!compared){
                     if(!ex.equals(ac)){
                         // convert both to string and try to compare them
                         char[] v1 = ex.toString().toCharArray();

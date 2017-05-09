@@ -1,12 +1,9 @@
 package org.whipper;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileReader;
-import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -85,7 +82,6 @@ public class Whipper {
 
     private final WhipperProperties properties;
     private final List<ProgressMonitor> monitors = new LinkedList<>();
-    private ResultMode resultMode;
     private WhipperThread executionThread;
     private WhipperResult result;
 
@@ -189,12 +185,12 @@ public class Whipper {
         result = null;
         properties.resolvePlaceholders();
         properties.dumpPropertiesToOutputDir();
-        resultMode = getResultMode(properties);
+        ResultMode resultMode = getResultMode(properties);
         List<TestResultsWriter> trws = getResultWriters(properties);
+        List<ScenarioSetUp> sss = new LinkedList<>();
+        ServiceLoader.load(ScenarioSetUp.class).forEach(sss::add);
         ScenarioIterator iter = new ScenarioIterator(properties, resultMode);
-        for(ProgressMonitor pm : monitors){
-            pm.starting(iter.getScenarioNames());
-        }
+        monitors.forEach(p -> p.starting(iter.getScenarioNames()));
         WhipperResult tmpRes = new WhipperResult();
         try{
             while(iter.hasNext()){
@@ -202,9 +198,16 @@ public class Whipper {
                 if(scen == null){
                     continue;
                 }
+                boolean run = true;
+                Iterator<ScenarioSetUp> i = sss.iterator();
+                while(run && i.hasNext()){
+                    run = i.next().setUp(scen);
+                }
                 scen.setProgressMonitors(monitors);
                 resultMode.resetConfiguration(iter.initProps);
-                if(scen.before()){
+                if(!run){
+                    LOG.warn("Skipping scenario {}. One or more set up procedures failed.", scen.getId());
+                } else if(scen.before()){
                     try{
                         scen.run();
                     } catch (WhipperException ex){
@@ -216,7 +219,7 @@ public class Whipper {
                         scen.after();
                     }
                 } else {
-                    LOG.warn("Skipping scenario {}.", scen.getId());
+                    LOG.warn("Skipping scenario {}. Ping failed.", scen.getId());
                 }
                 tmpRes.collectStats(scen);
                 for(TestResultsWriter trw : trws){
@@ -276,7 +279,7 @@ public class Whipper {
     }
 
     /**
-     * Thread for executing Whippe test.
+     * Thread for executing Whipper test.
      */
     private class WhipperThread extends Thread{
         @Override

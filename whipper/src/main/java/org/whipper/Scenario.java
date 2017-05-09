@@ -319,7 +319,7 @@ public class Scenario implements TimeTracker{
         } catch (Exception ex){
             LOG.error("Scenario setup failed: " + ex.getMessage(), ex);
             writeExceptionToFile("Summary_scenario_setup_fail.txt", ex);
-            Whipper.close(connection);
+            connectionFactory.closeConnection(connection);
             runMonitorsAfter();
             return false;
         }
