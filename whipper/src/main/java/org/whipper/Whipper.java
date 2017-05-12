@@ -214,7 +214,6 @@ public class Whipper {
                         LOG.error("Scenario has been interrupted.", ex);
                     } catch (Exception ex){
                         LOG.error("Unknown exception thrown.", ex);
-                        throw ex;
                     } finally {
                         scen.after();
                     }

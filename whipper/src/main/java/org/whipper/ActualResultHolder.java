@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import org.whipper.xml.XmlHelper;
 
@@ -126,7 +127,7 @@ public class ActualResultHolder {
      * @return message of original exception or {@code null} if this holder does not represent an exception
      */
     public String getOriginalExceptionMessage() {
-        return originalException == null ? null : originalException.getMessage();
+        return originalException == null ? null : String.valueOf(originalException.getMessage());
     }
 
     /**
@@ -144,7 +145,7 @@ public class ActualResultHolder {
      * @return message of root cause of original exception or {@code null} if this holder does not represent an exception
      */
     public String getRootCauseExceptionMessage() {
-        return rootCause == null ? null : rootCause.getMessage();
+        return rootCause == null ? null : String.valueOf(rootCause.getMessage());
     }
 
     /**
