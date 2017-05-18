@@ -150,7 +150,7 @@ public class Query implements TimeTracker{
                     result.pass = false;
                     return;
                 } else if(!valid){
-                    result.exception = new DbNotAvailableException(exception.getMessage(), exception);
+                    result.exception = new DbNotAvailableException("Connection is not valid. Last exception thrown - " + exception.getMessage(), exception);
                     result.pass = false;
                     return;
                 } else {
