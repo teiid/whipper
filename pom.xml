@@ -193,7 +193,6 @@
                         </dependency>
                     </dependencies>
                 </plugin>
-
             </plugins>
         </pluginManagement>
         <plugins>

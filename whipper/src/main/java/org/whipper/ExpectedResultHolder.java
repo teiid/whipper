@@ -355,6 +355,10 @@ public class ExpectedResultHolder {
                     double exD = (Double)ex;
                     double acD = (Double)ac;
                     fail = (exD != acD) && (exD + allowedDivergence.doubleValue() < acD || exD - allowedDivergence.doubleValue() > acD);
+                } else if(ex instanceof Number){
+                    fail = ((Number)ex).longValue() != ((Number)ac).longValue();
+                } else if(ex instanceof Boolean){
+                    fail = ((Boolean)ex).booleanValue() != ((Boolean)ac).booleanValue();
                 } else {
                     if(!ex.equals(ac)){
                         // convert both to string and try to compare them
