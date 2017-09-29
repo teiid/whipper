@@ -1,4 +1,4 @@
-package org.whipper.web;
+package org.whipper.web.job;
 
 import java.io.File;
 import java.util.Arrays;
@@ -15,6 +15,8 @@ import javax.inject.Inject;
 
 import org.json.JSONArray;
 import org.whipper.WhipperProperties;
+import org.whipper.web.Context;
+import org.whipper.web.Utils;
 
 /**
  * Job service. Serves as an interface for manipulating with jobs.

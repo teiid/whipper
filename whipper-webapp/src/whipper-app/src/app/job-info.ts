@@ -1,5 +1,5 @@
 export class JobInfo {
-  job-name: string;
-  started: long;
-  finished: long;
+  job_name: string;
+  started: number;
+  finished: number;
 }

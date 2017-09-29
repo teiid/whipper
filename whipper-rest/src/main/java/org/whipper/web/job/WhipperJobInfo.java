@@ -1,4 +1,4 @@
-package org.whipper.web;
+package org.whipper.web.job;
 
 import java.io.File;
 import java.io.FileReader;
@@ -17,9 +17,9 @@ import org.slf4j.LoggerFactory;
 class WhipperJobInfo{
 
     private static final Logger LOG = LoggerFactory.getLogger(WhipperJobInfo.class);
-    public static final String JOB_NAME = "job-name";
-    public static final String STARTED = "started";
-    public static final String FINISHED = "finished";
+    private static final String JOB_NAME = "job_name";
+    private static final String STARTED = "started";
+    private static final String FINISHED = "finished";
 
     private String jobName;
     private long started = -1;

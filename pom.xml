@@ -21,11 +21,11 @@
         <war.base.name>${project.artifactId}</war.base.name>
         <slf4j.version>1.7.12</slf4j.version>
         <log4j.version>2.3</log4j.version>
-        <junit.jupiter.version>5.0.0-M4</junit.jupiter.version>
-        <junit.platform.version>1.0.0-M4</junit.platform.version>
+        <junit.jupiter.version>5.0.0</junit.jupiter.version>
+        <junit.platform.version>1.0.0</junit.platform.version>
         <mockito.version>1.10.19</mockito.version>
         <json.version>20160810</json.version>
-        <wildfly.swarm.version>2016.12.1</wildfly.swarm.version>
+        <wildfly.swarm.version>2017.9.5</wildfly.swarm.version>
         <compiler.plugin.version>3.5.1</compiler.plugin.version>
         <jar.plugin.version>2.6</jar.plugin.version>
         <dependency.plugin.version>2.10</dependency.plugin.version>

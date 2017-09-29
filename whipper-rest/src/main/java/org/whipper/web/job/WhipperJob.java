@@ -1,4 +1,4 @@
-package org.whipper.web;
+package org.whipper.web.job;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,6 +23,8 @@ import org.whipper.Suite;
 import org.whipper.Whipper;
 import org.whipper.WhipperProperties;
 import org.whipper.WhipperResult;
+import org.whipper.web.Context;
+import org.whipper.web.Utils;
 
 /**
  * Class which represents one whipper job (i.e. one test run).
@@ -31,7 +33,7 @@ public class WhipperJob implements ProgressMonitor{
 
     private static final Logger LOG = LoggerFactory.getLogger(WhipperJob.class);
     private static final String ID = "id";
-    private static final String JOB_INFO = "job-info";
+    private static final String JOB_INFO = "job_info";
     private static final String SCENARIOS = "scenarios";
     private static final String SUITES = "suites";
     private static final String QUERY_SETS = "querySets";

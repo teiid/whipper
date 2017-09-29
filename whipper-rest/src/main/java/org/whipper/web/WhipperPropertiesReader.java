@@ -38,11 +38,16 @@ public class WhipperPropertiesReader implements MessageBodyReader<WhipperPropert
             throws IOException, WebApplicationException{
         try{
             JSONObject o = new JSONObject(new JSONTokener(entityStream));
+            if(!o.has("data")){
+                throw new JSONException("No key 'data'.");
+            }
+            JSONObject data = o.getJSONObject("data");
             Properties p = new Properties();
-            p.putAll(o.toMap());
+            p.putAll(data.toMap());
             return new WhipperProperties(p);
         } catch (JSONException ex){
-            throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity("Cannot parse JSON object.").build());
+            throw new WebApplicationException(Response.status(Status.BAD_REQUEST)
+                    .entity("Cannot parse JSON object [" + ex.getMessage() + "]").build());
         }
     }
 }

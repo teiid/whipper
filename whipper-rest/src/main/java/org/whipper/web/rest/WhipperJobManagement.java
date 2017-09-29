@@ -15,8 +15,8 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.whipper.WhipperProperties;
-import org.whipper.web.WhipperJob;
-import org.whipper.web.WhipperJobService;
+import org.whipper.web.job.WhipperJob;
+import org.whipper.web.job.WhipperJobService;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -49,7 +49,8 @@ public class WhipperJobManagement{
     @Path("start")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    @ApiResponses(@ApiResponse(code = 201, message = "Job has been successfully created.", responseHeaders = @ResponseHeader(name = "location", description = "URI to monitoring interface.")))
+    @ApiResponses(@ApiResponse(code = 201, message = "Job has been successfully created.",
+            responseHeaders = @ResponseHeader(name = "location", description = "URI to monitoring interface.")))
     @ApiOperation("Creates a new Whipper job.")
     public Response start(@Context UriInfo ui, WhipperProperties props){
         if (props == null) {

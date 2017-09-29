@@ -3,6 +3,6 @@ import { JobInfo } from './job-info';
 
 export class Job {
   id: string;
-  job-info: JobInfo;
+  job_info: JobInfo;
   scenarios: Scenario[];
 }
