@@ -69,7 +69,7 @@ public class MetaQuerySetResultMode implements ResultMode{
                     errorFileXml.getParentFile().mkdirs();
                     errorFileXml.createNewFile();
                 }
-                XmlHelper.writeError(q, EMPTY, errorFileXml);
+                XmlHelper.writeError(q, EMPTY, errorFileXml, null);
             } catch (IOException ex){
                 out.setException(ex);
             }
@@ -93,7 +93,7 @@ public class MetaQuerySetResultMode implements ResultMode{
                         f.getParentFile().mkdirs();
                         f.createNewFile();
                     }
-                    XmlHelper.writeError(q, EMPTY, f);
+                    XmlHelper.writeError(q, EMPTY, f, null);
                 }
             } catch (IOException ex){
                 LOG.warn("Cannot write error for query {}", q.getId(), ex);

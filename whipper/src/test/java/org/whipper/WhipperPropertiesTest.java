@@ -202,6 +202,14 @@ public class WhipperPropertiesTest{
     }
 
     @Test
+    public void getExpectedDirTest(){
+        WhipperProperties p = new WhipperProperties();
+        Assertions.assertNull(p.getArtifactsDir(), "Default is null.");
+        p.setExpectedResultsDir(" a,  b  , c ,d  ");
+        Assertions.assertEquals("a,b,c,d", p.getExpectedResultsDir() , "The result should have trimmed white space");
+    }
+
+    @Test
     public void getIncludeScenarioTest(){
         WhipperProperties p = new WhipperProperties();
         Assertions.assertSame(WhipperProperties.ALL_PATTERN, p.getIncludeScenario(), "Default is all.");
