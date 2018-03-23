@@ -485,7 +485,8 @@ public class WhipperProperties implements Cloneable{
      * @return expected results directory name
      */
     public String getExpectedResultsDir(){
-        return getProperty(Keys.EXPECTED_RESULTS_DIR);
+        String[] trimmedExpectedResultsDirArray = getProperty(Keys.EXPECTED_RESULTS_DIR).trim().split("\\s*,\\s*");
+        return String.join(",", trimmedExpectedResultsDirArray);
     }
 
     /**

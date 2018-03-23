@@ -390,10 +390,11 @@ public class XmlHelper {
      * @param out output file
      * @throws IOException if some error occurs
      */
-    public static void writeError(Query q, ExpectedResultHolder exp, File out) throws IOException{
+    public static void writeError(Query q, ExpectedResultHolder exp, File out, String expectedResultDirectoryName) throws IOException{
         QueryError err = ERROR_OBJECT_FACTORY.createQueryError();
         err.setQuery(q.getSql());
         err.setExpectedResult(exp.getOriginalResult());
+        err.getExpectedResult().setDirectory(expectedResultDirectoryName);
         err.setActualResult(produceQueryResult(q.getActualResult(), q.getId(), true));
         err.setFailures(ERROR_OBJECT_FACTORY.createQueryErrorFailures());
         err.getFailures().getFailure().addAll(exp.getErrors());

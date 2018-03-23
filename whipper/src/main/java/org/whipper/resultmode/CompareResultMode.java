@@ -9,6 +9,7 @@ import org.whipper.ExpectedResultHolder;
 import org.whipper.Query;
 import org.whipper.Whipper;
 import org.whipper.WhipperProperties;
+import org.whipper.utils.OverrideFileSelector;
 import org.whipper.xml.XmlHelper;
 
 /**
@@ -50,6 +51,10 @@ public class CompareResultMode implements ResultMode {
         return q.getScenario().getId() + File.separator + "errors_for_" + getName() + File.separator + q.getSuite().getId() + "_" + q.getId();
     }
 
+    private String getExpectedResultFileName(Query q){
+        return q.getSuite().getId() + File.separator + q.getSuite().getId() + "_" + q.getId() + ".xml";
+    }
+
     @Override
     public File getErrorFile(Query q){
         return new File(outputDirectory, getFileName(q) + "_error.xml");
@@ -57,14 +62,15 @@ public class CompareResultMode implements ResultMode {
 
     @Override
     public ResultHolder handleResult(Query q){
-        File result = new File(q.getScenario().getExpectedResultsDir(),
-                q.getSuite().getId() + File.separator + q.getSuite().getId() + "_" + q.getId() + ".xml");
         ResultHolder out = new ResultHolder();
+        OverrideFileSelector selector = new OverrideFileSelector(q.getScenario().getExpectedResultsDir());
+        File result = selector.getExpectedResultFile(getExpectedResultFileName(q));
+        String expectedResultDirectoryName = result.getParentFile().getParentFile().getName();
         try{
             holder.buildResult(result, q);
             boolean eq = holder.equals(q.getActualResult(), !q.getSql().toUpperCase().contains(" ORDER BY "), allowedDivergence);
             if(!eq){
-                writeErrorFile(q);
+                writeErrorFile(q, expectedResultDirectoryName);
                 out.setErrors(holder.getErrors());
             }
         } catch (IOException ex){
@@ -79,7 +85,7 @@ public class CompareResultMode implements ResultMode {
      * @param q query
      * @throws IOException if some error occurs
      */
-    private void writeErrorFile(Query q) throws IOException{
+    private void writeErrorFile(Query q, String expectedResultDirectoryName) throws IOException{
         File errorFileXml = getErrorFile(q);
         File errorFileTxt = new File(outputDirectory, getFileName(q) + "_failures.txt");
         errorFileXml.getParentFile().mkdirs();
@@ -92,7 +98,7 @@ public class CompareResultMode implements ResultMode {
                 fwTxt.write(err);
                 fwTxt.write(System.lineSeparator());
             }
-            XmlHelper.writeError(q, holder, errorFileXml);
+            XmlHelper.writeError(q, holder, errorFileXml, expectedResultDirectoryName);
         } finally {
             Whipper.close(fwTxt);
         }
