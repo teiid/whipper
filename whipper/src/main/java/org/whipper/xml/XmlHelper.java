@@ -388,6 +388,7 @@ public class XmlHelper {
      * @param q query
      * @param exp expected result
      * @param out output file
+     * @param expectedResultDirectoryName directory name used to load expected result
      * @throws IOException if some error occurs
      */
     public static void writeError(Query q, ExpectedResultHolder exp, File out, String expectedResultDirectoryName) throws IOException{
