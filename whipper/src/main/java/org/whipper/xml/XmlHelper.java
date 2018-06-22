@@ -396,6 +396,7 @@ public class XmlHelper {
         err.setQuery(q.getSql());
         err.setExpectedResult(exp.getOriginalResult());
         err.getExpectedResult().setDirectory(expectedResultDirectoryName);
+        err.getExpectedResult().setSuite(q.getSuite().getId());
         err.setActualResult(produceQueryResult(q.getActualResult(), q.getId(), true));
         err.setFailures(ERROR_OBJECT_FACTORY.createQueryErrorFailures());
         err.getFailures().getFailure().addAll(exp.getErrors());
