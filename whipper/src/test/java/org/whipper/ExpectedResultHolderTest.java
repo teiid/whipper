@@ -7,6 +7,7 @@ import java.sql.SQLNonTransientException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -84,6 +85,35 @@ public class ExpectedResultHolderTest{
                         Collections.singletonList("b"), Collections.singletonList("a"), Arrays.asList(Collections.singletonList(o1), Collections.singletonList(o4), Collections.singletonList(o3))), false, BigDecimal.ZERO), "Table exp - table act - wrong row"),
                 () -> Assertions.assertTrue(exp.equals(getMockTable(
                         Collections.singletonList("b"), Collections.singletonList("a"), Arrays.asList(Collections.singletonList(o1), Collections.singletonList(o2), Collections.singletonList(o3))), false, BigDecimal.ZERO), "Table exp - table act - ok"));
+    }
+    
+    @Test
+    public void regexTypeTest() {
+        ExpectedResultHolder exp = new ExpectedResultHolder();
+        exp.setColumnLabels(Collections.singletonList("regex"));
+        exp.setColumnTypeNames(Collections.singletonList("regex"));
+        Object o1 = Pattern.compile("24[.]0+");
+        Object o2 = Pattern.compile("true", Pattern.CASE_INSENSITIVE);
+        exp.setRows(Arrays.asList(Collections.singletonList(o1), Collections.singletonList(o2)));
+
+        Assertions
+            .assertAll(
+                () -> Assertions.assertTrue(exp.equals(
+                    getMockTable(Collections.singletonList("regex"), Collections.singletonList("regex"),
+                        Arrays.asList(Collections.singletonList(24.00000000), Collections.singletonList("TRUE"))),
+                    false, BigDecimal.ZERO), "Table exp - table act - regex should match"),
+                () -> Assertions
+                    .assertFalse(
+                        exp.equals(
+                            getMockTable(Collections.singletonList("regex"), Collections.singletonList("regex"),
+                                Arrays.asList(Collections.singletonList(24.00000000),
+                                    Collections.singletonList("FALSE"))),
+                            false, BigDecimal.ZERO),
+                        "Table exp - table act - regex should not match"),
+                () -> Assertions.assertFalse(exp.equals(
+                    getMockTable(Collections.singletonList("regex"), Collections.singletonList("regex"),
+                        Arrays.asList(Collections.singletonList(24.00000001), Collections.singletonList("TRUE"))),
+                    false, BigDecimal.ZERO), "Table exp - table act - regex should not match"));
     }
 
     private ActualResultHolder getMockUpdate(int uc){

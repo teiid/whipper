@@ -7,6 +7,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.whipper.xml.XmlHelper;
@@ -359,6 +360,8 @@ public class ExpectedResultHolder {
                     fail = ((Number)ex).longValue() != ((Number)ac).longValue();
                 } else if(ex instanceof Boolean){
                     fail = ((Boolean)ex).booleanValue() != ((Boolean)ac).booleanValue();
+                } else if (ex instanceof Pattern)  {
+                    fail = !((Pattern) ex).matcher(ac.toString()).matches();
                 } else {
                     if(!ex.equals(ac)){
                         // convert both to string and try to compare them

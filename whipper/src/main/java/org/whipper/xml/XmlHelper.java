@@ -79,6 +79,7 @@ public class XmlHelper {
     private static final String TYPE_BIGINTEGER = "biginteger";
     private static final String TYPE_BIGDECIMAL = "bigdecimal";
     private static final String TYPE_UNPRINTABLE = "unprintable";
+    private static final String TYPE_REGEX = "regex";
     /* XML I/O */
     private static final Unmarshaller RESULT_UNMARSHALLER;
     private static final Unmarshaller SUITE_UNMARSHALLER;
@@ -308,6 +309,8 @@ public class XmlHelper {
                 return new BigInteger(data);
             } else if(TYPE_BIGDECIMAL.equalsIgnoreCase(tagName)){
                 return new BigDecimal(data);
+            } else if (TYPE_REGEX.equalsIgnoreCase(tagName)) {
+                return Pattern.compile(data);
             } else { // String, Object and any other
                 return data;
             }
