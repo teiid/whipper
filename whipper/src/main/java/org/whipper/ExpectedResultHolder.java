@@ -402,7 +402,7 @@ public class ExpectedResultHolder {
     /**
      * Clears this holder.
      */
-    private void clear(){
+    public void clear(){
         updateCount = -1;
         if(columnLabels != null){ columnLabels.clear(); }
         if(columnTypeNames != null){ columnTypeNames.clear(); }

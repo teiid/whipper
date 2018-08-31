@@ -4,13 +4,18 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Collections;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.whipper.ExpectedResultHolder;
 import org.whipper.Query;
 import org.whipper.Whipper;
 import org.whipper.WhipperProperties;
 import org.whipper.utils.OverrideFileSelector;
 import org.whipper.xml.XmlHelper;
+import org.whipper.xml.result.ObjectFactory;
+import org.whipper.xml.result.QueryResultType;
 
 /**
  * This is a compare result mode. It will compare actual result of the query with expected result.
@@ -22,6 +27,8 @@ public class CompareResultMode implements ResultMode {
     private File outputDirectory;
     private BigDecimal allowedDivergence;
     private final ExpectedResultHolder holder = new ExpectedResultHolder();
+
+    private static final Logger LOG = LoggerFactory.getLogger(CompareResultMode.class);
 
     @Override
     public void resetConfiguration(WhipperProperties props) {
@@ -65,16 +72,31 @@ public class CompareResultMode implements ResultMode {
         ResultHolder out = new ResultHolder();
         OverrideFileSelector selector = new OverrideFileSelector(q.getScenario().getExpectedResultsDir());
         File result = selector.getExpectedResultFile(getExpectedResultFileName(q));
-        String expectedResultDirectoryName = result.getParentFile().getParentFile().getName();
-        try{
-            holder.buildResult(result, q);
-            boolean eq = holder.equals(q.getActualResult(), !q.getSql().toUpperCase().contains(" ORDER BY "), allowedDivergence);
-            if(!eq){
-                writeErrorFile(q, expectedResultDirectoryName);
-                out.setErrors(holder.getErrors());
+        if (result != null && result.exists()) {
+            String expectedResultDirectoryName = result.getParentFile().getParentFile().getName();
+            try{
+                holder.buildResult(result, q);
+                boolean eq = holder.equals(q.getActualResult(), !q.getSql().toUpperCase().contains(" ORDER BY "), allowedDivergence);
+                if(!eq){
+                    writeErrorFile(q, expectedResultDirectoryName);
+                    out.setErrors(holder.getErrors());
+                }
+            } catch (IOException ex){
+                LOG.error("Error handling result", ex);
+                out.setException(ex);
             }
-        } catch (IOException ex){
-            out.setException(ex);
+        } else {
+            // this means that no file with expected result was found
+            try {
+                holder.clear();
+                holder.setOriginalResult(null);
+                holder.getErrors().add("Unable to find expected result file for query");
+                out.setErrors(holder.getErrors());
+                writeErrorFile(q, "unknown");
+            } catch (IOException ex) {
+                LOG.error("Error handling result", ex);
+                out.setException(ex);
+            }
         }
         return out;
     }

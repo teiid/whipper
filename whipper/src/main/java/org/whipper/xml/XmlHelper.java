@@ -397,9 +397,14 @@ public class XmlHelper {
     public static void writeError(Query q, ExpectedResultHolder exp, File out, String expectedResultDirectoryName) throws IOException{
         QueryError err = ERROR_OBJECT_FACTORY.createQueryError();
         err.setQuery(q.getSql());
-        err.setExpectedResult(exp.getOriginalResult());
-        err.getExpectedResult().setDirectory(expectedResultDirectoryName);
-        err.getExpectedResult().setSuite(q.getSuite().getId());
+        if(exp.getOriginalResult() != null) {
+            err.setExpectedResult(exp.getOriginalResult());
+            err.getExpectedResult().setDirectory(expectedResultDirectoryName);
+            err.getExpectedResult().setSuite(q.getSuite().getId());
+        } else {
+            // this probably means that the expected result file could not be found
+            err.setExpectedResult(null);
+        }
         err.setActualResult(produceQueryResult(q.getActualResult(), q.getId(), true));
         err.setFailures(ERROR_OBJECT_FACTORY.createQueryErrorFailures());
         err.getFailures().getFailure().addAll(exp.getErrors());
